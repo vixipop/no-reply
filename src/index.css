@@ -1,0 +1,45 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  background-color: #0a3323;
+  background-image: repeating-linear-gradient(
+      to right,
+      rgba(51, 107, 85, 0.08) 0,
+      rgba(51, 107, 85, 0.08) 1px,
+      transparent 1px,
+      transparent 100px
+    ),
+    repeating-linear-gradient(
+      to bottom,
+      rgba(51, 107, 85, 0.08) 0,
+      rgba(51, 107, 85, 0.08) 1px,
+      transparent 1px,
+      transparent 100px
+    ),
+    repeating-linear-gradient(
+      to right,
+      rgba(51, 107, 85, 0.08) 0,
+      rgba(51, 107, 85, 0.08) 1px,
+      transparent 1px,
+      transparent 20px
+    ),
+    repeating-linear-gradient(
+      to bottom,
+      rgba(51, 107, 85, 0.08) 0,
+      rgba(51, 107, 85, 0.08) 1px,
+      transparent 1px,
+      transparent 20px
+    );
+  font-family: 'Space Grotesk', sans-serif;
+  overflow-x: hidden;
+}
