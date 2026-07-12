@@ -91,25 +91,32 @@
   left: 50%;
   bottom: 100%;
   transform: translateX(-50%);
-  margin-bottom: 2px;
-  width: 500px;
-  height: 28px;
+  /* breathing room between the ghost sliver and the main header */
+  margin-bottom: 18px;
+  /* wide enough that the ghost line never clips on the left/right edges */
+  width: 760px;
+  /* only the bottom ~half of the 48px glyphs shows through */
+  height: 34px;
   overflow: hidden;
-  -webkit-mask-image: linear-gradient(to top, black 0%, transparent 100%);
-  mask-image: linear-gradient(to top, black 0%, transparent 100%);
+  /* bottom of the strip stays opaque, fading smoothly to transparent at the top */
+  -webkit-mask-image: linear-gradient(to top, black 0%, black 26%, transparent 100%);
+  mask-image: linear-gradient(to top, black 0%, black 26%, transparent 100%);
+  pointer-events: none;
 }
 
 .prompt-ghost {
   position: absolute;
   left: 50%;
-  bottom: 0;
+  /* lift off the bottom edge so descenders (p, y) and their blur halo
+     aren't clipped flat by the overflow */
+  bottom: 6px;
   transform: translateX(-50%);
   font-family: 'Young Serif', serif;
-  font-size: 56px;
+  font-size: 48px;
   font-weight: 400;
   line-height: 1;
   color: #f7f4d5;
-  opacity: 0.6;
+  opacity: 0.55;
   white-space: nowrap;
   filter: blur(4px);
   pointer-events: none;
@@ -117,8 +124,8 @@
 
 .prompt-text {
   font-family: 'Young Serif', serif;
-  font-size: 56px;
-  font-weight: 600;
+  font-size: 48px;
+  font-weight: 400;
   color: #f7f4d5;
   line-height: 1.2;
 }
@@ -141,8 +148,14 @@
   border-radius: 14px;
   padding: 10px 16px;
   display: flex;
-  align-items: center;
-  justify-content: space-between;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.chatbox-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
 }
 
 .chatbox-input {
@@ -152,12 +165,49 @@
   background: transparent;
   font-family: 'Space Grotesk', sans-serif;
   font-size: 14px;
+  line-height: 1.5;
   color: #f7f4d5;
+  resize: none;
+  overflow: hidden;
+  /* grows with content, but never dominates the screen */
+  max-height: 40vh;
 }
 
 .chatbox-input::placeholder {
   color: #f7f4d5;
   opacity: 0.7;
+}
+
+.chatbox-image {
+  position: relative;
+  align-self: flex-start;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.chatbox-image img {
+  display: block;
+  max-height: 120px;
+  max-width: 100%;
+  object-fit: cover;
+}
+
+.chatbox-image-remove {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 22px;
+  height: 22px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(10, 51, 35, 0.8);
+  color: #f7f4d5;
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .send-wrap {
@@ -166,7 +216,8 @@
   justify-content: center;
   background: none;
   border: none;
-  padding: 0;
+  padding: 0 0 4px;
+  flex-shrink: 0;
   cursor: pointer;
 }
 
@@ -191,4 +242,194 @@
 .archive-label {
   font-size: 13px;
   color: #f7f4d5;
+}
+
+/* ---- shared buttons ---- */
+.icon-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  color: #f7f4d5;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 13px;
+  letter-spacing: 0.06em;
+}
+
+.icon-button.back:hover {
+  opacity: 0.8;
+}
+
+.back-icon {
+  width: 20px;
+  height: 20px;
+}
+
+.page-count {
+  font-size: 13px;
+  color: #f7f4d5;
+  letter-spacing: 0.06em;
+  opacity: 0.8;
+}
+
+/* ---- archive page ---- */
+.archive-wrap {
+  position: relative;
+  z-index: 1;
+  max-width: 1040px;
+  margin: 0 auto;
+  padding: 60px 24px 100px;
+}
+
+.archive-title {
+  font-family: 'Young Serif', serif;
+  font-weight: 400;
+  font-size: 48px;
+  color: #f7f4d5;
+  text-align: center;
+  margin-bottom: 48px;
+}
+
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 28px;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(107, 140, 118, 0.4);
+  border-radius: 16px;
+  overflow: hidden;
+  text-decoration: none;
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  border-color: #ffabe7;
+}
+
+.card-media {
+  aspect-ratio: 4 / 3;
+  background: #0d2a1e;
+  overflow: hidden;
+}
+
+.card-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.card-media-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-image: repeating-linear-gradient(
+      45deg,
+      rgba(51, 107, 85, 0.12) 0,
+      rgba(51, 107, 85, 0.12) 1px,
+      transparent 1px,
+      transparent 12px
+    );
+  opacity: 0.9;
+}
+
+.card-body {
+  padding: 16px 18px 20px;
+}
+
+.card-title {
+  font-family: 'Young Serif', serif;
+  font-weight: 400;
+  font-size: 20px;
+  line-height: 1.25;
+  color: #f7f4d5;
+  margin-bottom: 10px;
+}
+
+.card-subtitle {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 13px;
+  color: #77ff94;
+  margin-bottom: 6px;
+}
+
+.card-footer {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(247, 244, 213, 0.5);
+}
+
+.archive-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 80px 24px;
+  text-align: center;
+  color: rgba(247, 244, 213, 0.7);
+  font-size: 15px;
+}
+
+/* ---- single entry / blog page ---- */
+.entry-page {
+  position: relative;
+  z-index: 1;
+  max-width: 680px;
+  margin: 40px auto 100px;
+  padding: 0 24px;
+}
+
+.entry-hero {
+  border-radius: 16px;
+  overflow: hidden;
+  margin-bottom: 32px;
+  border: 1px solid rgba(107, 140, 118, 0.4);
+}
+
+.entry-hero img {
+  width: 100%;
+  max-height: 420px;
+  object-fit: cover;
+  display: block;
+}
+
+.entry-prompt {
+  font-family: 'Young Serif', serif;
+  font-size: 34px;
+  line-height: 1.2;
+  color: #f7f4d5;
+  margin-bottom: 8px;
+}
+
+.entry-date {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(247, 244, 213, 0.5);
+  margin-bottom: 32px;
+}
+
+.entry-body {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 17px;
+  line-height: 1.7;
+  color: #f7f4d5;
+}
+
+.entry-body p {
+  margin-bottom: 14px;
 }
