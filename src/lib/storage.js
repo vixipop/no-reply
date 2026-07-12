@@ -1,13 +1,22 @@
 // Local-only persistence for journal entries.
-// Each entry: { id, prompt, text, image (data URL | null), timestamp }
+// Each entry: { id, prompt, text, images: string[], cover: number, timestamp }
+// (older entries used a single `image` field — normalised on load)
 
 const STORAGE_KEY = 'no-reply-entries'
+
+function normalize(entry) {
+  if (Array.isArray(entry.images)) return entry
+  return {
+    ...entry,
+    images: entry.image ? [entry.image] : [],
+    cover: 0,
+  }
+}
 
 export function loadEntries() {
   try {
     const list = JSON.parse(localStorage.getItem(STORAGE_KEY)) || []
-    // newest first
-    return list.sort((a, b) => b.timestamp - a.timestamp)
+    return list.map(normalize).sort((a, b) => b.timestamp - a.timestamp)
   } catch {
     return []
   }
@@ -22,21 +31,36 @@ function makeId() {
   return `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
 }
 
-export function addEntry({ prompt, text, image = null }) {
+export function addEntry({ prompt, text, images = [] }) {
   const entries = loadEntries()
   const entry = {
     id: makeId(),
     prompt,
     text,
-    image,
+    images,
+    cover: 0,
     timestamp: Date.now(),
   }
   saveEntries([entry, ...entries])
   return entry
 }
 
+export function updateEntry(id, patch) {
+  const entries = loadEntries().map((e) => (e.id === id ? { ...e, ...patch } : e))
+  saveEntries(entries)
+  return entries.find((e) => e.id === id) || null
+}
+
 export function getEntry(id) {
   return loadEntries().find((e) => e.id === id) || null
+}
+
+// the chosen cover photo (or first available), or null
+export function coverImage(entry) {
+  if (!entry) return null
+  const imgs = entry.images || []
+  const idx = entry.cover ?? 0
+  return imgs[idx] || imgs[0] || null
 }
 
 function startOfWeek(date) {

@@ -51,6 +51,14 @@ export function SendStar() {
   )
 }
 
+export function SparkleMini({ size = 14, color = '#FFABE7' }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill={color} aria-hidden="true">
+      <path d="M12 2c.6 4.2 3.2 6.8 7.4 7.4C15.2 10 12.6 12.6 12 16.8 11.4 12.6 8.8 10 4.6 9.4 8.8 8.8 11.4 6.2 12 2z" />
+    </svg>
+  )
+}
+
 export function DotStar({ size = 18, color = '#6B8C76' }) {
   return (
     <svg width={size} height={size} viewBox="0 0 100 100" fill={color}>

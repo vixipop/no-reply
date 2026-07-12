@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { formatDate, loadEntries } from '../lib/storage'
+import { coverImage, formatDate, loadEntries } from '../lib/storage'
 import { BackIcon, DotStar } from '../components/icons'
 
 function truncate(text, max = 90) {
@@ -9,11 +9,12 @@ function truncate(text, max = 90) {
 }
 
 function EntryCard({ entry }) {
+  const cover = coverImage(entry)
   return (
     <Link to={`/entry/${entry.id}`} className="card">
       <div className="card-media">
-        {entry.image ? (
-          <img src={entry.image} alt="" />
+        {cover ? (
+          <img src={cover} alt="" />
         ) : (
           <div className="card-media-placeholder">
             <DotStar size={48} color="#6B8C76" />

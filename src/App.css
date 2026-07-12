@@ -42,6 +42,7 @@
   background-repeat: no-repeat;
   filter: drop-shadow(-2px 2px 2px rgba(0, 0, 0, 0.25));
   z-index: 1;
+  transition: transform 0.8s cubic-bezier(0.25, 0.8, 0.3, 1);
 }
 
 .star-deco.star1 {
@@ -52,12 +53,20 @@
   transform: rotate(14.3deg);
 }
 
+.star-deco.star1:hover {
+  transform: rotate(44.3deg) scale(1.08);
+}
+
 .star-deco.star2 {
   width: 30px;
   height: 32px;
   top: calc(50% + 78px);
   left: 22.5%;
   transform: rotate(87.83deg);
+}
+
+.star-deco.star2:hover {
+  transform: rotate(117.83deg) scale(1.08);
 }
 
 .corner-sparkle {
@@ -70,6 +79,12 @@
   line-height: 1;
   z-index: 1;
   filter: drop-shadow(0 0 18px rgba(255, 171, 231, 0.55));
+  transition: transform 0.8s cubic-bezier(0.25, 0.8, 0.3, 1);
+  cursor: default;
+}
+
+.corner-sparkle:hover {
+  transform: rotate(180deg) scale(1.12);
 }
 
 .content-wrap {
@@ -128,6 +143,85 @@
   font-weight: 400;
   color: #f7f4d5;
   line-height: 1.2;
+  cursor: text;
+}
+
+/* iOS-picker style reel: the new prompt slides in as the old one leaves */
+@keyframes reelDown {
+  from {
+    opacity: 0;
+    transform: translateY(-30px);
+    filter: blur(5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0);
+  }
+}
+
+@keyframes reelUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+    filter: blur(5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0);
+  }
+}
+
+.prompt-text.reel-down {
+  animation: reelDown 0.26s ease;
+}
+
+.prompt-text.reel-up {
+  animation: reelUp 0.26s ease;
+}
+
+/* editable title — blue selection look with corner handles */
+.title-edit {
+  position: relative;
+  display: inline-block;
+  outline: 1.5px solid #4c9ffe;
+  padding: 2px 12px;
+}
+
+.title-input {
+  display: inline-block;
+  color: #4c9ffe;
+  outline: none;
+  caret-color: #4c9ffe;
+  cursor: text;
+  white-space: pre-wrap;
+}
+
+.handle {
+  position: absolute;
+  width: 9px;
+  height: 9px;
+  background: #fff;
+  border: 1.5px solid #4c9ffe;
+  border-radius: 1px;
+}
+
+.handle.tl {
+  top: -5px;
+  left: -5px;
+}
+.handle.tr {
+  top: -5px;
+  right: -5px;
+}
+.handle.bl {
+  bottom: -5px;
+  left: -5px;
+}
+.handle.br {
+  bottom: -5px;
+  right: -5px;
 }
 
 .highlight-word {
@@ -432,4 +526,123 @@
 
 .entry-body p {
   margin-bottom: 14px;
+}
+
+/* ---- text buttons / entry edit ---- */
+.text-button {
+  background: none;
+  border: 1px solid rgba(107, 140, 118, 0.5);
+  color: #f7f4d5;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  padding: 6px 14px;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: border-color 0.2s ease;
+}
+
+.text-button:hover {
+  border-color: #ffabe7;
+}
+
+.text-button.ghost {
+  border-color: transparent;
+  opacity: 0.7;
+}
+
+.edit-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.photo-editor {
+  margin-bottom: 36px;
+}
+
+.photo-editor-label {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 13px;
+  color: rgba(247, 244, 213, 0.7);
+  margin-bottom: 14px;
+}
+
+.photo-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 14px;
+}
+
+.photo-thumb {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  border-radius: 12px;
+  overflow: hidden;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: border-color 0.2s ease;
+}
+
+.photo-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.photo-thumb.is-cover {
+  border-color: #ffabe7;
+}
+
+.cover-badge {
+  position: absolute;
+  left: 8px;
+  bottom: 8px;
+  background: #ffabe7;
+  color: #0a3323;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 10px;
+}
+
+.photo-remove {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 22px;
+  height: 22px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(10, 51, 35, 0.82);
+  color: #f7f4d5;
+  font-size: 15px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.photo-add {
+  aspect-ratio: 4 / 3;
+  border: 1.5px dashed #6b8c76;
+  background: none;
+  color: #f7f4d5;
+  border-radius: 12px;
+  cursor: pointer;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 13px;
+  transition: border-color 0.2s ease;
+}
+
+.photo-add:hover {
+  border-color: #ffabe7;
+}
+
+.photo-editor-hint {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 12px;
+  color: rgba(247, 244, 213, 0.45);
+  margin-top: 12px;
 }
