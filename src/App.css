@@ -91,12 +91,16 @@
   left: 50%;
   bottom: 100%;
   transform: translateX(-50%);
-  margin-bottom: 2px;
-  width: 500px;
-  height: 28px;
+  margin-bottom: 6px;
+  /* wide enough that the ghost line never clips on the left/right edges */
+  width: 760px;
+  /* only the bottom ~half of the 48px glyphs shows through */
+  height: 30px;
   overflow: hidden;
-  -webkit-mask-image: linear-gradient(to top, black 0%, transparent 100%);
-  mask-image: linear-gradient(to top, black 0%, transparent 100%);
+  /* bottom of the strip stays opaque, fading smoothly to transparent at the top */
+  -webkit-mask-image: linear-gradient(to top, black 0%, black 28%, transparent 100%);
+  mask-image: linear-gradient(to top, black 0%, black 28%, transparent 100%);
+  pointer-events: none;
 }
 
 .prompt-ghost {
@@ -105,11 +109,11 @@
   bottom: 0;
   transform: translateX(-50%);
   font-family: 'Young Serif', serif;
-  font-size: 56px;
+  font-size: 48px;
   font-weight: 400;
   line-height: 1;
   color: #f7f4d5;
-  opacity: 0.6;
+  opacity: 0.55;
   white-space: nowrap;
   filter: blur(4px);
   pointer-events: none;
@@ -117,8 +121,8 @@
 
 .prompt-text {
   font-family: 'Young Serif', serif;
-  font-size: 56px;
-  font-weight: 600;
+  font-size: 48px;
+  font-weight: 400;
   color: #f7f4d5;
   line-height: 1.2;
 }
