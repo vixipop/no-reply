@@ -2,21 +2,22 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import star1 from '../assets/star1.png'
 import star2 from '../assets/star2.png'
-import { addEntry, loadEntries, streak, weekCount } from '../lib/storage'
-import { ArchiveIcon, FireIcon, SendStar, SparkleMini } from '../components/icons'
+import { addEntry, loadEntries, loggedToday, streak, weekCount } from '../lib/storage'
+import { ArchiveIcon, CornerSparkle, FireIcon, SendStar, SparkleMini } from '../components/icons'
 
 // The rotation. `glow` is the word rendered in green — swap these freely later.
 const PROMPTS = [
   { text: 'what did i notice today?', glow: 'notice' },
   { text: 'what am i proud of today?', glow: 'proud' },
   { text: 'letter to my future self', glow: 'future' },
-  { text: 'something to bring up in therapy next', glow: 'therapy' },
+  { text: 'bring up in therapy next', glow: 'therapy' },
   { text: 'what felt heavy today?', glow: 'heavy' },
-  { text: 'what made me laugh recently?', glow: 'laugh' },
-  { text: 'a small thing worth remembering', glow: 'remembering' },
+  { text: 'what made me laugh?', glow: 'laugh' },
+  { text: 'a thing worth keeping', glow: 'keeping' },
 ]
 
-// render a prompt with its glow word wrapped, if any
+const LINE_LOCK = 10 // at 10+ lines the reel locks and the ghost hides
+
 function renderPrompt(text, glow) {
   if (!glow) return text
   const i = text.toLowerCase().indexOf(glow.toLowerCase())
@@ -35,57 +36,75 @@ export default function Home() {
   const [entries, setEntries] = useState(loadEntries)
   const [value, setValue] = useState('')
   const [image, setImage] = useState(null)
+  const [lineCount, setLineCount] = useState(0)
 
   // prompt reel
   const [index, setIndex] = useState(0)
+  const [prev, setPrev] = useState(null)
   const [direction, setDirection] = useState('down')
-  // custom title overrides the rotation prompt until the user scrolls
   const [customTitle, setCustomTitle] = useState(null)
   const [editing, setEditing] = useState(false)
 
   const taRef = useRef(null)
   const editRef = useRef(null)
-  const editingRef = useRef(false)
-  useEffect(() => {
-    editingRef.current = editing
-  }, [editing])
 
   const weekTotal = useMemo(() => weekCount(entries), [entries])
   const dayStreak = useMemo(() => streak(entries), [entries])
+  const didToday = useMemo(() => loggedToday(entries), [entries])
 
   const current = PROMPTS[index]
   const promptText = customTitle ?? current.text
   const promptGlow = customTitle ? null : current.glow
   const ghostText = PROMPTS[(index + 1) % PROMPTS.length].text
 
-  // grow the textarea to fit its content, like a chat composer
+  // reel is locked (scroll no longer changes the prompt) while editing a
+  // custom title, once a custom title exists, or past LINE_LOCK lines
+  const reelLocked = editing || customTitle !== null || lineCount >= LINE_LOCK
+  const showGhost = !editing && customTitle === null && lineCount < LINE_LOCK
+
+  // refs so the once-registered listeners read the latest values
+  const lockedRef = useRef(reelLocked)
+  const indexRef = useRef(index)
+  const transitioningRef = useRef(false)
+  useEffect(() => {
+    lockedRef.current = reelLocked
+    indexRef.current = index
+  }, [reelLocked, index])
+
+  // grow textarea + track line count (drives the lock / ghost)
   useLayoutEffect(() => {
     const el = taRef.current
     if (!el) return
     el.style.height = 'auto'
     el.style.height = `${el.scrollHeight}px`
+    const lh = parseFloat(getComputedStyle(el).lineHeight) || 21
+    setLineCount(value === '' ? 0 : Math.round(el.scrollHeight / lh))
   }, [value])
 
-  // advance the reel (scroll wheel / arrow keys)
+  // scroll wheel / arrow keys move the reel (smoothly, one prompt per gesture)
   useEffect(() => {
-    let locked = false
     let acc = 0
     const advance = (dir) => {
+      if (transitioningRef.current) return
+      transitioningRef.current = true
       setDirection(dir > 0 ? 'down' : 'up')
+      setPrev(indexRef.current)
       setIndex((i) => (i + dir + PROMPTS.length) % PROMPTS.length)
       setCustomTitle(null)
+      setTimeout(() => {
+        setPrev(null)
+        transitioningRef.current = false
+      }, 520)
     }
     const onWheel = (e) => {
-      if (editingRef.current) return
+      if (lockedRef.current) return // let the textarea scroll natively
       acc += e.deltaY
-      if (locked || Math.abs(acc) < 24) return
+      if (Math.abs(acc) < 28) return
       advance(acc > 0 ? 1 : -1)
       acc = 0
-      locked = true
-      setTimeout(() => (locked = false), 340)
     }
     const onKey = (e) => {
-      if (editingRef.current) return
+      if (lockedRef.current) return
       const ae = document.activeElement
       if (ae && ae.classList.contains('chatbox-input')) return
       if (e.key === 'ArrowDown') {
@@ -136,7 +155,7 @@ export default function Home() {
   const save = () => {
     const text = value.trim()
     if (!text && !image) return
-    addEntry({ prompt: promptText, text, images: image ? [image] : [] })
+    addEntry({ prompt: promptText, text: value, images: image ? [image] : [] })
     setEntries(loadEntries())
     setValue('')
     setImage(null)
@@ -170,11 +189,11 @@ export default function Home() {
       <div className="star-deco star1" style={{ backgroundImage: `url(${star1})` }} />
       <div className="star-deco star2" style={{ backgroundImage: `url(${star2})` }} />
 
-      <div className="corner-sparkle">*</div>
+      <CornerSparkle />
 
       <div className="top-row">
         <div className="streak-wrap">
-          <FireIcon />
+          <FireIcon color={didToday ? '#FFABE7' : '#7E8B84'} />
           <span className="day-label">{dayStreak} day streak</span>
         </div>
         <button
@@ -188,9 +207,11 @@ export default function Home() {
 
       <div className="content-wrap">
         <div className="prompt-wrap">
-          <div className="prompt-ghost-wrap">
-            <div className="prompt-ghost">{ghostText}</div>
-          </div>
+          {showGhost && (
+            <div className="prompt-ghost-wrap">
+              <div className="prompt-ghost">{ghostText}</div>
+            </div>
+          )}
 
           {editing ? (
             <span className="title-edit">
@@ -208,13 +229,20 @@ export default function Home() {
               <i className="handle br" />
             </span>
           ) : (
-            <div
-              key={index}
-              className={`prompt-text reel-${direction}`}
-              onClick={() => setEditing(true)}
-              title="click to write your own title"
-            >
-              {renderPrompt(promptText, promptGlow)}
+            <div className="prompt-stage">
+              {prev !== null && (
+                <div className={`prompt-text prompt-layer leave-${direction}`} key={`leave-${prev}`}>
+                  {renderPrompt(PROMPTS[prev].text, PROMPTS[prev].glow)}
+                </div>
+              )}
+              <div
+                className={`prompt-text prompt-layer ${prev !== null ? `enter-${direction}` : ''}`}
+                key={`cur-${index}-${customTitle ?? ''}`}
+                onClick={() => setEditing(true)}
+                title="click to write your own title"
+              >
+                {renderPrompt(promptText, promptGlow)}
+              </div>
             </div>
           )}
         </div>

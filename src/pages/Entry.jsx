@@ -1,7 +1,7 @@
 import { useMemo, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { coverImage, formatDate, getEntry, updateEntry } from '../lib/storage'
-import { BackIcon } from '../components/icons'
+import { coverImage, deleteEntry, formatDate, getEntry, updateEntry } from '../lib/storage'
+import { BackIcon, CornerSparkle, TrashIcon } from '../components/icons'
 
 export default function Entry() {
   const { id } = useParams()
@@ -10,7 +10,8 @@ export default function Entry() {
 
   const [entry, setEntry] = useState(initial)
   const [editing, setEditing] = useState(false)
-  // working copy while editing
+  const [prompt, setPrompt] = useState(initial?.prompt || '')
+  const [text, setText] = useState(initial?.text || '')
   const [images, setImages] = useState(initial?.images || [])
   const [cover, setCover] = useState(initial?.cover ?? 0)
   const fileRef = useRef(null)
@@ -18,7 +19,7 @@ export default function Entry() {
   if (!entry) {
     return (
       <div className="app">
-        <div className="corner-sparkle">*</div>
+        <CornerSparkle />
         <div className="top-row">
           <button className="icon-button back" onClick={() => navigate('/archive')}>
             <BackIcon />
@@ -33,18 +34,21 @@ export default function Entry() {
   }
 
   const startEdit = () => {
+    setPrompt(entry.prompt)
+    setText(entry.text)
     setImages(entry.images || [])
     setCover(entry.cover ?? 0)
     setEditing(true)
   }
 
   const addFiles = (fileList) => {
-    const files = [...fileList].filter((f) => f.type.startsWith('image/'))
-    files.forEach((file) => {
-      const reader = new FileReader()
-      reader.onload = () => setImages((prev) => [...prev, reader.result])
-      reader.readAsDataURL(file)
-    })
+    ;[...fileList]
+      .filter((f) => f.type.startsWith('image/'))
+      .forEach((file) => {
+        const reader = new FileReader()
+        reader.onload = () => setImages((prev) => [...prev, reader.result])
+        reader.readAsDataURL(file)
+      })
   }
 
   const removeImage = (i) => {
@@ -54,7 +58,7 @@ export default function Entry() {
 
   const onEditPaste = (e) => {
     const items = [...e.clipboardData.items].filter((it) => it.type.startsWith('image/'))
-    if (items.length) {
+    if (items.length && e.target.tagName !== 'TEXTAREA') {
       e.preventDefault()
       items.forEach((it) => {
         const file = it.getAsFile()
@@ -65,16 +69,23 @@ export default function Entry() {
 
   const saveEdits = () => {
     const safeCover = Math.min(cover, Math.max(0, images.length - 1))
-    const updated = updateEntry(entry.id, { images, cover: safeCover })
+    const updated = updateEntry(entry.id, { prompt, text, images, cover: safeCover })
     setEntry(updated)
     setEditing(false)
+  }
+
+  const remove = () => {
+    if (window.confirm('Delete this entry? This cannot be undone.')) {
+      deleteEntry(entry.id)
+      navigate('/archive')
+    }
   }
 
   const hero = coverImage(entry)
 
   return (
     <div className="app" onPaste={editing ? onEditPaste : undefined}>
-      <div className="corner-sparkle">*</div>
+      <CornerSparkle />
 
       <div className="top-row">
         <button
@@ -95,71 +106,85 @@ export default function Entry() {
             </button>
           </div>
         ) : (
-          <button className="text-button" onClick={startEdit}>
-            edit photos
-          </button>
+          <div className="edit-actions">
+            <button className="text-button danger" onClick={remove} aria-label="delete entry">
+              <TrashIcon />
+            </button>
+            <button className="text-button" onClick={startEdit}>
+              edit
+            </button>
+          </div>
         )}
       </div>
 
       <article className="entry-page">
         {editing ? (
-          <div className="photo-editor">
-            <p className="photo-editor-label">
-              photos — click a photo to make it the cover
-            </p>
-            <div className="photo-grid">
-              {images.map((src, i) => (
-                <div
-                  key={i}
-                  className={`photo-thumb${i === cover ? ' is-cover' : ''}`}
-                  onClick={() => setCover(i)}
-                >
-                  <img src={src} alt="" />
-                  {i === cover && <span className="cover-badge">cover</span>}
-                  <button
-                    className="photo-remove"
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      removeImage(i)
-                    }}
-                    aria-label="remove photo"
+          <>
+            <div className="photo-editor">
+              <p className="photo-editor-label">photos — click a photo to make it the cover</p>
+              <div className="photo-grid">
+                {images.map((src, i) => (
+                  <div
+                    key={i}
+                    className={`photo-thumb${i === cover ? ' is-cover' : ''}`}
+                    onClick={() => setCover(i)}
                   >
-                    ×
-                  </button>
-                </div>
-              ))}
-              <button className="photo-add" onClick={() => fileRef.current?.click()}>
-                + add photo
-              </button>
+                    <img src={src} alt="" />
+                    {i === cover && <span className="cover-badge">cover</span>}
+                    <button
+                      className="photo-remove"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        removeImage(i)
+                      }}
+                      aria-label="remove photo"
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))}
+                <button className="photo-add" onClick={() => fileRef.current?.click()}>
+                  + add photo
+                </button>
+              </div>
+              <input
+                ref={fileRef}
+                type="file"
+                accept="image/*"
+                multiple
+                hidden
+                onChange={(e) => {
+                  addFiles(e.target.files)
+                  e.target.value = ''
+                }}
+              />
             </div>
-            <p className="photo-editor-hint">tip: you can also paste an image here</p>
-            <input
-              ref={fileRef}
-              type="file"
-              accept="image/*"
-              multiple
-              hidden
-              onChange={(e) => {
-                addFiles(e.target.files)
-                e.target.value = ''
-              }}
-            />
-          </div>
-        ) : (
-          hero && (
-            <div className="entry-hero">
-              <img src={hero} alt="" />
-            </div>
-          )
-        )}
 
-        <p className="entry-prompt">{entry.prompt}</p>
-        <p className="entry-date">{formatDate(entry.timestamp)}</p>
-        <div className="entry-body">
-          {entry.text.split('\n').map((line, i) => (
-            <p key={i}>{line || ' '}</p>
-          ))}
-        </div>
+            <input
+              className="entry-prompt-input"
+              value={prompt}
+              onChange={(e) => setPrompt(e.target.value)}
+              placeholder="title"
+            />
+            <textarea
+              className="entry-text-input"
+              value={text}
+              onChange={(e) => setText(e.target.value)}
+              placeholder="write your entry…"
+            />
+          </>
+        ) : (
+          <>
+            {hero && (
+              <div className="entry-hero">
+                <img src={hero} alt="" />
+              </div>
+            )}
+            <p className="entry-prompt">{entry.prompt}</p>
+            <p className="entry-date">{formatDate(entry.timestamp)}</p>
+            <div className="entry-body">{entry.text}</div>
+          </>
+        )}
       </article>
     </div>
   )

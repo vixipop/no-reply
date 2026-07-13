@@ -55,6 +55,10 @@ export function getEntry(id) {
   return loadEntries().find((e) => e.id === id) || null
 }
 
+export function deleteEntry(id) {
+  saveEntries(loadEntries().filter((e) => e.id !== id))
+}
+
 // the chosen cover photo (or first available), or null
 export function coverImage(entry) {
   if (!entry) return null
@@ -76,16 +80,41 @@ export function weekCount(entries) {
   return entries.filter((e) => new Date(e.timestamp) >= weekStart).length
 }
 
+// Whether an entry exists for today (drives the flame colour).
+export function loggedToday(entries) {
+  const today = new Date().toDateString()
+  return entries.some((e) => new Date(e.timestamp).toDateString() === today)
+}
+
+// Consecutive-day streak. It does NOT reset to 0 just because today
+// isn't logged yet — if yesterday was logged the streak still stands
+// (the flame simply goes grey until you journal today).
 export function streak(entries) {
   const days = new Set(entries.map((e) => new Date(e.timestamp).toDateString()))
-  let count = 0
   const cursor = new Date()
   cursor.setHours(0, 0, 0, 0)
+  // if today isn't logged, start counting from yesterday
+  if (!days.has(cursor.toDateString())) cursor.setDate(cursor.getDate() - 1)
+  let count = 0
   while (days.has(cursor.toDateString())) {
     count += 1
     cursor.setDate(cursor.getDate() - 1)
   }
   return count
+}
+
+// Filter helpers for the archive
+export function withinRange(entry, range) {
+  if (range === 'all') return true
+  const now = new Date()
+  const start = new Date()
+  start.setHours(0, 0, 0, 0)
+  if (range === 'week') start.setDate(now.getDate() - now.getDay())
+  else if (range === 'month') start.setDate(1)
+  else if (range === 'year') {
+    start.setMonth(0, 1)
+  }
+  return new Date(entry.timestamp) >= start
 }
 
 export function formatDate(ts) {

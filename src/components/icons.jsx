@@ -1,6 +1,6 @@
-export function FireIcon() {
+export function FireIcon({ color = '#FFABE7' }) {
   return (
-    <svg className="fire-icon" viewBox="0 0 24 24" fill="#FFABE7">
+    <svg className="fire-icon" viewBox="0 0 24 24" fill={color}>
       <path d="M12 2c1 3-2 4-2 7a3 3 0 0 0 6 0c1.5 1 2 3 2 4.5A6.5 6.5 0 0 1 5 13.5C5 9 8 6 9 4c.3 2 1 2.5 1.5 2.5C11 5 11 3 12 2z" />
     </svg>
   )
@@ -51,10 +51,43 @@ export function SendStar() {
   )
 }
 
+// four-point sparkle, symmetric around the centre so it sits inline cleanly
 export function SparkleMini({ size = 14, color = '#FFABE7' }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill={color} aria-hidden="true">
-      <path d="M12 2c.6 4.2 3.2 6.8 7.4 7.4C15.2 10 12.6 12.6 12 16.8 11.4 12.6 8.8 10 4.6 9.4 8.8 8.8 11.4 6.2 12 2z" />
+      <path d="M12 3C12.5 8 16 11.5 21 12C16 12.5 12.5 16 12 21C11.5 16 8 12.5 3 12C8 11.5 11.5 8 12 3Z" />
+    </svg>
+  )
+}
+
+// six-point asterisk, perfectly centred in its box so hover-rotation spins in place
+export function CornerSparkle() {
+  return (
+    <svg className="corner-sparkle" viewBox="0 0 24 24" aria-hidden="true">
+      <g stroke="#FFABE7" strokeWidth="2.4" strokeLinecap="round">
+        <line x1="12" y1="3" x2="12" y2="21" />
+        <line x1="4.2" y1="7.5" x2="19.8" y2="16.5" />
+        <line x1="4.2" y1="16.5" x2="19.8" y2="7.5" />
+      </g>
+    </svg>
+  )
+}
+
+export function SearchIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+      <circle cx="11" cy="11" r="7" />
+      <path d="M20 20l-3.2-3.2" />
+    </svg>
+  )
+}
+
+export function TrashIcon() {
+  return (
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M4 7h16" />
+      <path d="M9 7V5h6v2" />
+      <path d="M6 7l1 13h10l1-13" />
     </svg>
   )
 }
