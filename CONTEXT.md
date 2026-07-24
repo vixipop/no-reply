@@ -403,3 +403,34 @@ npm run preview  # serve the production build locally
 - Push notifications / reminders.
 - Multi-device sync beyond what the storage choice naturally gives.
 - Rich-text formatting in entries (plain text with preserved whitespace only).
+
+---
+
+## 16. Design system — Toasts & notifications (LOCKED)
+
+**Every** toast / popup / notification in the app uses one shared look: a
+**yellow sticky note**. Build one reusable `<Toast>` component and route all
+confirmations and letters through it — never one-off styles.
+
+- **Surface:** vertical gradient `#FDF07A → #F7E35C`, ink text `#4A3D10`,
+  `border-radius: 2px`, `box-shadow: 2px 8px 18px rgba(0,0,0,.32)`.
+- **Random tilt (required):** each toast picks a fresh rotation on mount,
+  roughly **-3.5° to +3.5°** (skip near-0 so it always reads hand-placed).
+  The tilt must persist through the show/hide transition (include it in both
+  the hidden and shown transforms, don't let the slide reset it to 0).
+- **Optional detail:** a faint "tape" strip (`rgba(255,255,255,.35)`) across
+  the top-center; use sparingly.
+- **Position & motion:** bottom-center, `position: fixed`. Slide up + fade in
+  (~0.45s ease-out), hold ~2.6s, slide down + fade out. `prefers-reduced-motion`
+  → fade only, no slide.
+- **Contents:** left = small icon (~24–26px) — the **message-in-a-bottle PNG**
+  (user-supplied; placeholder bottle SVG until then); right = message text in
+  **Space Grotesk 500, 14px**, dark ink (not cream — this sits on light paper).
+- **Copy:** the send/save confirmation rotates through: "sealed & saved." ·
+  "it's out of your head now." · "said and gone. lighter?" · "kept. just for
+  you." · "that's between you and you."
+- **Reused for:** send/save confirmation now; later the "a letter came in"
+  resurfacing toast, grace-day earned, etc. — all the same component.
+
+Reference prototype: `demos/toast-styles-demo.html` (the "yellow sticky note"
+button).
