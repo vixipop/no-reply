@@ -4,6 +4,18 @@
 
 const STORAGE_KEY = 'no-reply-entries'
 
+// Ask the browser to keep this site's data and NOT evict it (e.g. Safari's
+// ~7-day cleanup). Best-effort: resolves true if storage is now persistent.
+export async function requestPersistentStorage() {
+  try {
+    if (!navigator.storage?.persist) return false
+    if (await navigator.storage.persisted?.()) return true
+    return await navigator.storage.persist()
+  } catch {
+    return false
+  }
+}
+
 function normalize(entry) {
   if (Array.isArray(entry.images)) return entry
   return {
