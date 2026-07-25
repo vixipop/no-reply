@@ -14,9 +14,11 @@ after every couple of features I show this back with items checked off.
 ## 1. Capture & the exhale — "it's out of my head, and it's safe"
 - [x] Frictionless chat-style input (no blank-page cursor)
 - [x] Choose a prompt or write your own title
-- ▶ **Envelope send animation** — a tiny letter flies from the box into the void
-- [ ] Rotating save microcopy ("sealed. no one will ever read this." etc.)
+- [x] **Sticky-note toast** on save (yellow note, random tilt — design system §16)
+- [x] Rotating save microcopy (via the toast: "sealed & saved." etc.)
+- [ ] Envelope send animation — a tiny letter flies from the box into the void (awaiting pick: demos/send-anim-demo.html, 1–4)
 - [ ] Reassuring placeholder ("start typing… no one's reading")
+- [ ] Swap toast placeholder bottle icon for the real PNG
 
 ## 2. Letters — the reply from yourself
 - [ ] **"a letter came in" toast** — envelope, bottom-right, ephemeral (not saved, gone in 24h)
