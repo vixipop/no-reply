@@ -16,14 +16,19 @@ after every couple of features I show this back with items checked off.
 - [x] Choose a prompt or write your own title
 - [x] **Sticky-note toast** on save (yellow note, random tilt — design system §16)
 - [x] Rotating save microcopy (via the toast: "sealed & saved." etc.)
-- [ ] Envelope send animation — a tiny letter flies from the box into the void (awaiting pick: demos/send-anim-demo.html, 1–4)
+- [ ] Envelope send animation — launches from the CURSOR now (awaiting pick: demos/send-anim-v2.html, A–D). First set (send-anim-demo.html) rejected.
 - [ ] Reassuring placeholder ("start typing… no one's reading")
 - [ ] Swap toast placeholder bottle icon for the real PNG
 
 ## 2. Letters — the reply from yourself
-- [ ] **"a letter came in" toast** — envelope, bottom-right, ephemeral (not saved, gone in 24h)
-- [ ] Toast copy: time-ago + mood ("you seemed tired 3 days ago. still true?", "one year ago today")
-- [ ] Tap a toast → opens that past entry
+- [~] **"a letter from your past"** — kraft envelope, bottom-right; click to flip
+      open the flap, note rises with name + date (prototype: demos/past-letter.html — awaiting approval)
+- [ ] CTA on the risen note → "reply to your past self" (promotes the reply feature)
+- [ ] Content/logic for what the peek shows (to be ideated once the animation is approved)
+- [ ] Time-ago + mood label ("you seemed tired 3 days ago. still true?", "one year ago today")
+- [ ] Tap → opens that past entry / the reply thread
+> Note: two notification surfaces — **yellow sticky note** = quick toasts (§16);
+> **kraft envelope** = the weightier "letter from your past" moment.
 - [ ] **Reply-to-past-you thread** ⭐ — write back to an old entry; a conversation with your old self
 - [ ] Resurfacing engine (on-this-day / N-days-ago) that feeds the toasts
 
