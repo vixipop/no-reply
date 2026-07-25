@@ -340,6 +340,80 @@
   color: #f7f4d5;
 }
 
+/* ---- toasts / notifications: yellow sticky note (design system §16) ---- */
+.toast-host {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 34px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  pointer-events: none;
+  z-index: 100;
+}
+
+.toast.sticky {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 13px 20px;
+  min-width: 230px;
+  max-width: 340px;
+  font-family: 'Space Grotesk', sans-serif;
+  background: linear-gradient(180deg, #fdf07a 0%, #f7e35c 100%);
+  color: #4a3d10;
+  border-radius: 2px;
+  box-shadow: 2px 8px 18px rgba(0, 0, 0, 0.32);
+  /* --tilt is set inline per toast and kept in BOTH states so the slide
+     never resets the rotation to 0 */
+  opacity: 0;
+  transform: translateY(26px) rotate(var(--tilt, -2deg));
+  transition: opacity 0.4s ease, transform 0.45s cubic-bezier(0.2, 0.8, 0.3, 1);
+}
+
+.toast.sticky.show {
+  opacity: 1;
+  transform: translateY(0) rotate(var(--tilt, -2deg));
+}
+
+/* a little strip of tape */
+.toast.sticky::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: -9px;
+  width: 62px;
+  height: 17px;
+  transform: translateX(-50%) rotate(1.5deg);
+  background: rgba(255, 255, 255, 0.32);
+  border: 1px solid rgba(255, 255, 255, 0.45);
+}
+
+.toast.sticky .msg {
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.25;
+}
+
+.toast.sticky .bottle-icon {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .toast.sticky {
+    transition: opacity 0.3s ease;
+    transform: rotate(var(--tilt, -2deg));
+  }
+  .toast.sticky.show {
+    transform: rotate(var(--tilt, -2deg));
+  }
+}
+
 /* ---- shared buttons ---- */
 .icon-button {
   display: inline-flex;

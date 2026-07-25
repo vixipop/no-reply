@@ -4,6 +4,16 @@ import star1 from '../assets/star1.png'
 import star2 from '../assets/star2.png'
 import { addEntry, loadEntries, loggedToday, streak, weekCount } from '../lib/storage'
 import { ArchiveIcon, CornerSparkle, FireIcon, SendStar, SparkleMini } from '../components/icons'
+import { useToast } from '../components/Toast'
+
+// confirmation lines shown in the sticky-note toast after a save
+const SAVE_LINES = [
+  'sealed & saved.',
+  "it's out of your head now.",
+  'said and gone. lighter?',
+  'kept. just for you.',
+  "that's between you and you.",
+]
 
 // The rotation. `glow` is the word rendered in green — swap these freely later.
 const PROMPTS = [
@@ -33,6 +43,7 @@ function renderPrompt(text, glow) {
 
 export default function Home() {
   const navigate = useNavigate()
+  const toast = useToast()
   const [entries, setEntries] = useState(loadEntries)
   const [value, setValue] = useState('')
   const [image, setImage] = useState(null)
@@ -160,6 +171,7 @@ export default function Home() {
     setValue('')
     setImage(null)
     setCustomTitle(null)
+    toast(SAVE_LINES[Math.floor(Math.random() * SAVE_LINES.length)])
   }
 
   const onKeyDown = (e) => {

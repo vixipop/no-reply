@@ -73,6 +73,17 @@ export function CornerSparkle() {
   )
 }
 
+// placeholder message-in-a-bottle — swap for the user's PNG later
+export function BottleIcon() {
+  return (
+    <svg className="bottle-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M10 2h4v3l1.2 2.2a3 3 0 0 1 .3 1.3V20a2 2 0 0 1-2 2h-3a2 2 0 0 1-2-2V8.5a3 3 0 0 1 .3-1.3L10 5z" />
+      <path d="M9.2 12.5h5.6" />
+      <path d="M11 2.5h2" />
+    </svg>
+  )
+}
+
 export function SearchIcon() {
   return (
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
