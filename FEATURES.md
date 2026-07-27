@@ -60,6 +60,7 @@ after every couple of features I show this back with items checked off.
 ## 6. Archive / time machine
 - [x] Archive of entries · [x] search + week/month/year filters · [x] delete
 - [x] Fully editable entries · [x] preserved indents/paragraphs/blank lines
+- [x] Unsaved-changes guard on entry edit (confirm on back/cancel + tab-close warning)
 - [ ] Content-state copy — title "everything you've told no one", empty, "you've kept 47 thoughts safe"
 - [ ] Flag on-this-day entries in the archive
 

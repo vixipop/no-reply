@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { coverImage, deleteEntry, formatDate, getEntry, updateEntry } from '../lib/storage'
 import { BackIcon, CornerSparkle, TrashIcon } from '../components/icons'
@@ -15,6 +15,32 @@ export default function Entry() {
   const [images, setImages] = useState(initial?.images || [])
   const [cover, setCover] = useState(initial?.cover ?? 0)
   const fileRef = useRef(null)
+
+  // are there unsaved edits?
+  const dirty =
+    editing &&
+    !!entry &&
+    (prompt !== entry.prompt ||
+      text !== entry.text ||
+      (cover ?? 0) !== (entry.cover ?? 0) ||
+      JSON.stringify(images) !== JSON.stringify(entry.images || []))
+
+  // warn on tab close / refresh while there are unsaved edits
+  useEffect(() => {
+    if (!dirty) return
+    const handler = (e) => {
+      e.preventDefault()
+      e.returnValue = ''
+    }
+    window.addEventListener('beforeunload', handler)
+    return () => window.removeEventListener('beforeunload', handler)
+  }, [dirty])
+
+  // confirm before any in-app navigation that would drop unsaved edits
+  const leave = (fn) => {
+    if (dirty && !window.confirm('You have unsaved changes — leave without saving?')) return
+    fn()
+  }
 
   if (!entry) {
     return (
@@ -90,7 +116,7 @@ export default function Entry() {
       <div className="top-row">
         <button
           className="icon-button back"
-          onClick={() => navigate('/archive')}
+          onClick={() => leave(() => navigate('/archive'))}
           aria-label="back to archive"
         >
           <BackIcon />
@@ -98,7 +124,7 @@ export default function Entry() {
         </button>
         {editing ? (
           <div className="edit-actions">
-            <button className="text-button ghost" onClick={() => setEditing(false)}>
+            <button className="text-button ghost" onClick={() => leave(() => setEditing(false))}>
               cancel
             </button>
             <button className="text-button" onClick={saveEdits}>
