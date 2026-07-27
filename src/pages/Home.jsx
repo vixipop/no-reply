@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import star1 from '../assets/star1.png'
 import star2 from '../assets/star2.png'
 import { addEntry, loadEntries, loggedToday, streak, weekCount } from '../lib/storage'
-import { ArchiveIcon, CornerSparkle, FireIcon, SendStar, SparkleMini } from '../components/icons'
+import { ArchiveIcon, CornerSparkle, FireIcon, MicIcon, SendStar, SparkleMini } from '../components/icons'
 import { useToast } from '../components/Toast'
 
 // confirmation lines shown in the sticky-note toast after a save
@@ -48,6 +48,7 @@ export default function Home() {
   const [value, setValue] = useState('')
   const [image, setImage] = useState(null)
   const [lineCount, setLineCount] = useState(0)
+  const [mode, setMode] = useState('quick') // 'quick' | 'journal'
 
   // prompt reel
   const [index, setIndex] = useState(0)
@@ -68,10 +69,12 @@ export default function Home() {
   const promptGlow = customTitle ? null : current.glow
   const ghostText = PROMPTS[(index + 1) % PROMPTS.length].text
 
-  // reel is locked (scroll no longer changes the prompt) while editing a
-  // custom title, once a custom title exists, or past LINE_LOCK lines
-  const reelLocked = editing || customTitle !== null || lineCount >= LINE_LOCK
-  const showGhost = !editing && customTitle === null && lineCount < LINE_LOCK
+  // reel is locked (scroll no longer changes the prompt) in journal mode,
+  // while editing a custom title, once a custom title exists, or past LINE_LOCK lines
+  const reelLocked =
+    mode === 'journal' || editing || customTitle !== null || lineCount >= LINE_LOCK
+  const showGhost =
+    mode === 'quick' && !editing && customTitle === null && lineCount < LINE_LOCK
 
   // refs so the once-registered listeners read the latest values
   const lockedRef = useRef(reelLocked)
@@ -90,7 +93,7 @@ export default function Home() {
     el.style.height = `${el.scrollHeight}px`
     const lh = parseFloat(getComputedStyle(el).lineHeight) || 21
     setLineCount(value === '' ? 0 : Math.round(el.scrollHeight / lh))
-  }, [value])
+  }, [value, mode])
 
   // scroll wheel / arrow keys move the reel (smoothly, one prompt per gesture)
   useEffect(() => {
@@ -217,85 +220,171 @@ export default function Home() {
         </button>
       </div>
 
-      <div className="content-wrap">
-        <div className="prompt-wrap">
-          {showGhost && (
-            <div className="prompt-ghost-wrap">
-              <div className="prompt-ghost">{ghostText}</div>
-            </div>
-          )}
-
-          {editing ? (
-            <span className="title-edit">
-              <span
-                ref={editRef}
-                className="prompt-text title-input"
-                contentEditable
-                suppressContentEditableWarning
-                onKeyDown={onTitleKeyDown}
-                onBlur={commitTitle}
-              />
-              <i className="handle tl" />
-              <i className="handle tr" />
-              <i className="handle bl" />
-              <i className="handle br" />
-            </span>
-          ) : (
-            <div className="prompt-stage">
-              {prev !== null && (
-                <div className={`prompt-text prompt-layer leave-${direction}`} key={`leave-${prev}`}>
-                  {renderPrompt(PROMPTS[prev].text, PROMPTS[prev].glow)}
-                </div>
-              )}
-              <div
-                className={`prompt-text prompt-layer ${prev !== null ? `enter-${direction}` : ''}`}
-                key={`cur-${index}-${customTitle ?? ''}`}
-                onClick={() => setEditing(true)}
-                title="click to write your own title"
+      {/* the mode toggle (bottom-left) + room on the right for future tools */}
+      {(() => {
+        const bar = (
+          <div className="composer-bar">
+            <div className="mode-toggle">
+              <button
+                className={mode === 'quick' ? 'active' : ''}
+                onClick={() => setMode('quick')}
               >
-                {renderPrompt(promptText, promptGlow)}
-              </div>
+                quick note
+              </button>
+              <button
+                className={mode === 'journal' ? 'active' : ''}
+                onClick={() => setMode('journal')}
+              >
+                journal
+              </button>
             </div>
-          )}
-        </div>
-
-        <div className="chat-area">
-          <div className="chatbox">
-            {image && (
-              <div className="chatbox-image">
-                <img src={image} alt="attached" />
-                <button
-                  className="chatbox-image-remove"
-                  onClick={() => setImage(null)}
-                  aria-label="remove image"
-                >
-                  ×
+            <div className="bar-right">
+              {mode === 'journal' && (
+                <button className="seal-btn" onClick={save}>
+                  seal ↳
                 </button>
-              </div>
-            )}
-            <div className="chatbox-row">
-              <textarea
-                ref={taRef}
-                className="chatbox-input"
-                rows={1}
-                placeholder="start typing..."
-                value={value}
-                onChange={(e) => setValue(e.target.value)}
-                onKeyDown={onKeyDown}
-                onPaste={onPaste}
-              />
-              <button className="send-wrap" onClick={save} aria-label="save entry">
-                <SendStar />
+              )}
+              <button
+                className="mic-btn"
+                onClick={() => toast('voice notes — coming soon')}
+                title="voice notes — coming soon"
+                aria-label="voice note"
+              >
+                <MicIcon />
               </button>
             </div>
           </div>
+        )
 
-          <div className="archive-preview">
-            <SparkleMini />
-            <span className="archive-label">{weekTotal} entries this week</span>
+        const imagePreview = image && (
+          <div className="chatbox-image">
+            <img src={image} alt="attached" />
+            <button
+              className="chatbox-image-remove"
+              onClick={() => setImage(null)}
+              aria-label="remove image"
+            >
+              ×
+            </button>
           </div>
-        </div>
-      </div>
+        )
+
+        // the editable title (shared by both modes)
+        const editableTitle = (
+          <span className="title-edit">
+            <span
+              ref={editRef}
+              className="prompt-text title-input"
+              contentEditable
+              suppressContentEditableWarning
+              onKeyDown={onTitleKeyDown}
+              onBlur={commitTitle}
+            />
+            <i className="handle tl" />
+            <i className="handle tr" />
+            <i className="handle bl" />
+            <i className="handle br" />
+          </span>
+        )
+
+        if (mode === 'journal') {
+          return (
+            <div className="content-wrap">
+              <div className="journal-page">
+                <div className="journal-title-wrap">
+                  {editing ? (
+                    editableTitle
+                  ) : (
+                    <div
+                      className="prompt-text journal-title"
+                      onClick={() => setEditing(true)}
+                      title="click to edit the title"
+                    >
+                      {renderPrompt(promptText, promptGlow)}
+                    </div>
+                  )}
+                </div>
+
+                {imagePreview}
+
+                <textarea
+                  ref={taRef}
+                  className="journal-body"
+                  placeholder="start writing…"
+                  value={value}
+                  onChange={(e) => setValue(e.target.value)}
+                  onPaste={onPaste}
+                />
+
+                {bar}
+              </div>
+            </div>
+          )
+        }
+
+        return (
+          <div className="content-wrap">
+            <div className="prompt-wrap">
+              {showGhost && (
+                <div className="prompt-ghost-wrap">
+                  <div className="prompt-ghost">{ghostText}</div>
+                </div>
+              )}
+
+              {editing ? (
+                editableTitle
+              ) : (
+                <div className="prompt-stage">
+                  {prev !== null && (
+                    <div
+                      className={`prompt-text prompt-layer leave-${direction}`}
+                      key={`leave-${prev}`}
+                    >
+                      {renderPrompt(PROMPTS[prev].text, PROMPTS[prev].glow)}
+                    </div>
+                  )}
+                  <div
+                    className={`prompt-text prompt-layer ${prev !== null ? `enter-${direction}` : ''}`}
+                    key={`cur-${index}-${customTitle ?? ''}`}
+                    onClick={() => setEditing(true)}
+                    title="click to write your own title"
+                  >
+                    {renderPrompt(promptText, promptGlow)}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="chat-area">
+              <div className="chatbox">
+                {imagePreview}
+                <div className="chatbox-row">
+                  <textarea
+                    ref={taRef}
+                    className="chatbox-input"
+                    rows={1}
+                    placeholder="start typing..."
+                    value={value}
+                    onChange={(e) => setValue(e.target.value)}
+                    onKeyDown={onKeyDown}
+                    onPaste={onPaste}
+                  />
+                  <button className="send-wrap" onClick={save} aria-label="save entry">
+                    <SendStar />
+                  </button>
+                </div>
+              </div>
+
+              {bar}
+
+              <div className="archive-preview">
+                <SparkleMini />
+                <span className="archive-label">{weekTotal} entries this week</span>
+              </div>
+            </div>
+          </div>
+        )
+      })()}
     </div>
   )
 }

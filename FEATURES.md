@@ -14,6 +14,12 @@ after every couple of features I show this back with items checked off.
 ## 1. Capture & the exhale — "it's out of my head, and it's safe"
 - [x] Frictionless chat-style input (no blank-page cursor)
 - [x] Choose a prompt or write your own title
+- [x] **quick note ↔ journal toggle** (bottom-left); journal = open page,
+      no box, left-aligned; prompt switching stays scroll-only in quick mode,
+      journal carries the current title (still click-to-edit)
+- [x] Composer bar: toggle left, tools right (mic placeholder for voice notes)
+- [x] Archive entry edit is now an open page too (no bounding box)
+- [ ] Voice notes (mic) — placeholder only, not wired
 - [x] **Sticky-note toast** on save (yellow note, random tilt — design system §16)
 - [x] Rotating save microcopy (via the toast: "sealed & saved." etc.)
 - [ ] Envelope send animation — launches from the CURSOR now (awaiting pick: demos/send-anim-v2.html, A–D). First set (send-anim-demo.html) rejected.
