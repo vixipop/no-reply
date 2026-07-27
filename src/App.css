@@ -542,6 +542,99 @@
   }
 }
 
+/* ---- in-app confirm (sticky note) ---- */
+.confirm-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(6, 30, 20, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  z-index: 200;
+}
+
+.confirm-note {
+  position: relative;
+  width: 100%;
+  max-width: 330px;
+  background: linear-gradient(180deg, #fdf07a 0%, #f7e35c 100%);
+  color: #4a3d10;
+  border-radius: 2px;
+  box-shadow: 2px 8px 24px rgba(0, 0, 0, 0.4);
+  padding: 22px 22px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  transform: rotate(var(--tilt, -2deg));
+  animation: confirmIn 0.25s cubic-bezier(0.2, 0.8, 0.3, 1);
+}
+
+.confirm-note::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: -9px;
+  width: 66px;
+  height: 18px;
+  transform: translateX(-50%) rotate(1.5deg);
+  background: rgba(255, 255, 255, 0.32);
+  border: 1px solid rgba(255, 255, 255, 0.45);
+}
+
+@keyframes confirmIn {
+  from {
+    opacity: 0;
+    transform: rotate(var(--tilt, -2deg)) translateY(8px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: rotate(var(--tilt, -2deg)) translateY(0) scale(1);
+  }
+}
+
+.confirm-msg {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.confirm-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.confirm-stay {
+  background: #4a3d10;
+  color: #fdf07a;
+  border: none;
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 500;
+  font-size: 13px;
+  padding: 8px 15px;
+  border-radius: 16px;
+  cursor: pointer;
+}
+
+.confirm-leave {
+  background: none;
+  border: none;
+  color: rgba(74, 61, 16, 0.75);
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 13px;
+  padding: 8px 6px;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.confirm-leave:hover {
+  color: #4a3d10;
+}
+
 /* ---- shared buttons ---- */
 .icon-button {
   display: inline-flex;

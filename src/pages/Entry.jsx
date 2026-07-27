@@ -2,10 +2,12 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { coverImage, deleteEntry, formatDate, getEntry, updateEntry } from '../lib/storage'
 import { BackIcon, CornerSparkle, TrashIcon } from '../components/icons'
+import { useConfirm } from '../components/Confirm'
 
 export default function Entry() {
   const { id } = useParams()
   const navigate = useNavigate()
+  const confirm = useConfirm()
   const initial = useMemo(() => getEntry(id), [id])
 
   const [entry, setEntry] = useState(initial)
@@ -36,9 +38,9 @@ export default function Entry() {
     return () => window.removeEventListener('beforeunload', handler)
   }, [dirty])
 
-  // confirm before any in-app navigation that would drop unsaved edits
-  const leave = (fn) => {
-    if (dirty && !window.confirm('You have unsaved changes — leave without saving?')) return
+  // confirm (in-app sticky note) before navigation that would drop unsaved edits
+  const leave = async (fn) => {
+    if (dirty && !(await confirm('you have unsaved changes. save before you leave?'))) return
     fn()
   }
 
@@ -100,8 +102,8 @@ export default function Entry() {
     setEditing(false)
   }
 
-  const remove = () => {
-    if (window.confirm('Delete this entry? This cannot be undone.')) {
+  const remove = async () => {
+    if (await confirm("delete this entry? this can't be undone.", { confirmLabel: 'delete', cancelLabel: 'keep it' })) {
       deleteEntry(entry.id)
       navigate('/archive')
     }

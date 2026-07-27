@@ -4,6 +4,7 @@ import { BrowserRouter } from 'react-router-dom'
 import './index.css'
 import App from './App.jsx'
 import { ToastProvider } from './components/Toast.jsx'
+import { ConfirmProvider } from './components/Confirm.jsx'
 import { requestPersistentStorage } from './lib/storage'
 
 // keep the user's writing from being evicted by the browser
@@ -13,7 +14,9 @@ createRoot(document.getElementById('root')).render(
   <StrictMode>
     <BrowserRouter>
       <ToastProvider>
-        <App />
+        <ConfirmProvider>
+          <App />
+        </ConfirmProvider>
       </ToastProvider>
     </BrowserRouter>
   </StrictMode>,
