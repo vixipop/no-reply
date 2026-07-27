@@ -445,9 +445,10 @@
   color: rgba(247, 244, 213, 0.4);
 }
 
+/* toolbar sits above the writing area so the whole page below is for text */
 .journal-page .composer-bar {
   max-width: none;
-  margin-top: 18px;
+  margin: 4px 0 22px;
 }
 
 .journal-page .chatbox-image {

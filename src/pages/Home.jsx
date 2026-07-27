@@ -305,6 +305,8 @@ export default function Home() {
                   )}
                 </div>
 
+                {bar}
+
                 {imagePreview}
 
                 <textarea
@@ -315,8 +317,6 @@ export default function Home() {
                   onChange={(e) => setValue(e.target.value)}
                   onPaste={onPaste}
                 />
-
-                {bar}
               </div>
             </div>
           )
