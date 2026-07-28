@@ -1,6 +1,13 @@
 import { useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { coverImage, deleteEntry, formatDate, loadEntries, withinRange } from '../lib/storage'
+import {
+  coverImage,
+  deleteEntry,
+  entryText,
+  formatDate,
+  loadEntries,
+  withinRange,
+} from '../lib/storage'
 import { BackIcon, CornerSparkle, DotStar, SearchIcon, TrashIcon } from '../components/icons'
 
 const RANGES = [
@@ -41,7 +48,7 @@ function EntryCard({ entry, onDelete }) {
         </button>
       </div>
       <div className="card-body">
-        <h2 className="card-title">{truncate(entry.text) || 'untitled entry'}</h2>
+        <h2 className="card-title">{truncate(entryText(entry)) || 'untitled entry'}</h2>
         <p className="card-subtitle">{entry.prompt}</p>
         <p className="card-footer">{formatDate(entry.timestamp)}</p>
       </div>
@@ -62,7 +69,7 @@ export default function Archive() {
       .filter(
         (e) =>
           !q ||
-          e.text.toLowerCase().includes(q) ||
+          entryText(e).toLowerCase().includes(q) ||
           e.prompt.toLowerCase().includes(q),
       )
   }, [entries, range, query])

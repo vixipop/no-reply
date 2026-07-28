@@ -111,6 +111,15 @@ export function MicIcon() {
   )
 }
 
+export function PinIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M9 4h6l-1 6 3 3H7l3-3-1-6z" />
+      <path d="M12 16v4" />
+    </svg>
+  )
+}
+
 export function SearchIcon() {
   return (
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">

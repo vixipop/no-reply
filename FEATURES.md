@@ -74,10 +74,11 @@ after every couple of features I show this back with items checked off.
 
 ## 7b. Ambience
 - [x] Persistent ambient **rain** player (top-right, all screens; never pauses on
-      navigation) with a volume slider that appears when playing
+      navigation) — slim, volume slider reveals on hover
       — procedural Web Audio for now (swap in a real rain file later)
-- [ ] Inline images anywhere in an entry + per-image "set as cover" (removes the
-      top photo grid) — needs the block-based content model (next)
+- [x] **Inline images** anywhere in an entry (paste at cursor / drag-drop),
+      resizable to any width, with a **pin** to set the archive cover — via a
+      block-based content model; old entries migrate automatically
 
 ## 8. Voice & content
 - [ ] Manifesto / hero line

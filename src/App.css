@@ -12,11 +12,11 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
-  padding: 5px;
-  border-radius: 22px;
+  gap: 4px;
+  padding: 3px;
+  border-radius: 16px;
   background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(247, 244, 213, 0.12);
+  border: 1px solid rgba(247, 244, 213, 0.1);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
 }
@@ -25,32 +25,47 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
+  width: 24px;
+  height: 24px;
   border-radius: 50%;
   border: none;
   cursor: pointer;
-  background: rgba(255, 171, 231, 0.18);
+  background: rgba(255, 171, 231, 0.16);
   color: #ffabe7;
   flex-shrink: 0;
   transition: background 0.2s ease;
+}
+
+.music-toggle svg {
+  width: 13px;
+  height: 13px;
 }
 
 .music-toggle:hover {
   background: rgba(255, 171, 231, 0.3);
 }
 
-/* vertical slider drops below the button while playing — stays in the corner */
+/* vertical slider is revealed only while hovering the player */
 .music-volume {
   -webkit-appearance: slider-vertical;
   appearance: slider-vertical;
   writing-mode: vertical-lr;
   direction: rtl;
-  width: 20px;
-  height: 78px;
-  margin-bottom: 3px;
+  width: 16px;
+  height: 0;
+  opacity: 0;
+  overflow: hidden;
+  pointer-events: none;
   accent-color: #ffabe7;
   cursor: pointer;
+  transition: height 0.2s ease, opacity 0.2s ease;
+}
+
+.music-player:hover .music-volume {
+  height: 68px;
+  opacity: 1;
+  pointer-events: auto;
+  margin-bottom: 2px;
 }
 
 .top-row {
@@ -998,19 +1013,99 @@
   margin-bottom: 20px;
 }
 
-.entry-text-input {
+/* ---- block editor (inline text + images) ---- */
+.block-editor {
+  display: flex;
+  flex-direction: column;
+}
+
+.block-text {
   width: 100%;
-  min-height: 300px;
-  background: transparent;
   border: none;
   outline: none;
+  background: transparent;
   resize: none;
+  overflow: hidden;
   font-family: 'Space Grotesk', sans-serif;
   font-size: 17px;
   line-height: 1.7;
   color: #f7f4d5;
-  padding: 0;
   tab-size: 4;
+}
+
+.block-text::placeholder {
+  color: rgba(247, 244, 213, 0.4);
+}
+
+.img-block {
+  position: relative;
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  min-width: 90px;
+  margin: 12px 0;
+  border-radius: 12px;
+  overflow: hidden;
+  /* drag the corner to resize to any width */
+  resize: horizontal;
+}
+
+.img-block img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 12px;
+}
+
+.img-tools {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: flex;
+  gap: 6px;
+}
+
+.img-pin,
+.img-del {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(10, 51, 35, 0.78);
+  color: #f7f4d5;
+  font-size: 16px;
+  line-height: 1;
+}
+
+.img-pin.active {
+  background: #ffabe7;
+  color: #0a3323;
+}
+
+/* read-only render */
+.block-view {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 17px;
+  line-height: 1.7;
+  color: #f7f4d5;
+}
+
+.bv-text {
+  white-space: pre-wrap;
+  word-break: break-word;
+  margin-bottom: 14px;
+}
+
+.bv-img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  border-radius: 12px;
+  margin: 14px 0;
 }
 
 /* ---- text buttons / entry edit ---- */

@@ -1,8 +1,9 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { coverImage, deleteEntry, formatDate, getEntry, updateEntry } from '../lib/storage'
+import { deleteEntry, formatDate, getEntry, updateEntry } from '../lib/storage'
 import { BackIcon, CornerSparkle, TrashIcon } from '../components/icons'
 import { useConfirm } from '../components/Confirm'
+import { BlockEditor, BlockView } from '../components/BlockEditor'
 
 export default function Entry() {
   const { id } = useParams()
@@ -13,31 +14,27 @@ export default function Entry() {
   const [entry, setEntry] = useState(initial)
   const [editing, setEditing] = useState(false)
   const [prompt, setPrompt] = useState(initial?.prompt || '')
-  const [text, setText] = useState(initial?.text || '')
-  const [images, setImages] = useState(initial?.images || [])
-  const [cover, setCover] = useState(initial?.cover ?? 0)
-  const fileRef = useRef(null)
+  const [blocks, setBlocks] = useState(initial?.blocks || [])
+  const [coverId, setCoverId] = useState(initial?.coverId || null)
 
   // are there unsaved edits?
   const dirty =
     editing &&
     !!entry &&
     (prompt !== entry.prompt ||
-      text !== entry.text ||
-      (cover ?? 0) !== (entry.cover ?? 0) ||
-      JSON.stringify(images) !== JSON.stringify(entry.images || []))
+      coverId !== entry.coverId ||
+      JSON.stringify(blocks) !== JSON.stringify(entry.blocks))
 
   // autosave (debounced) — no manual save, no unsaved-changes guard
   const flushSave = () => {
     if (!entry) return
-    const safeCover = Math.min(cover, Math.max(0, images.length - 1))
-    setEntry(updateEntry(entry.id, { prompt, text, images, cover: safeCover }))
+    setEntry(updateEntry(entry.id, { prompt, blocks, coverId }))
   }
   useEffect(() => {
     if (!dirty) return
     const t = setTimeout(flushSave, 900)
     return () => clearTimeout(t)
-  }, [dirty, prompt, text, images, cover]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [dirty, prompt, blocks, coverId]) // eslint-disable-line react-hooks/exhaustive-deps
 
   if (!entry) {
     return (
@@ -58,49 +55,25 @@ export default function Entry() {
 
   const startEdit = () => {
     setPrompt(entry.prompt)
-    setText(entry.text)
-    setImages(entry.images || [])
-    setCover(entry.cover ?? 0)
+    setBlocks(entry.blocks || [])
+    setCoverId(entry.coverId || null)
     setEditing(true)
   }
 
-  const addFiles = (fileList) => {
-    ;[...fileList]
-      .filter((f) => f.type.startsWith('image/'))
-      .forEach((file) => {
-        const reader = new FileReader()
-        reader.onload = () => setImages((prev) => [...prev, reader.result])
-        reader.readAsDataURL(file)
-      })
-  }
-
-  const removeImage = (i) => {
-    setImages((prev) => prev.filter((_, idx) => idx !== i))
-    setCover((c) => (i === c ? 0 : i < c ? c - 1 : c))
-  }
-
-  const onEditPaste = (e) => {
-    const items = [...e.clipboardData.items].filter((it) => it.type.startsWith('image/'))
-    if (items.length && e.target.tagName !== 'TEXTAREA') {
-      e.preventDefault()
-      items.forEach((it) => {
-        const file = it.getAsFile()
-        if (file) addFiles([file])
-      })
-    }
-  }
-
   const remove = async () => {
-    if (await confirm("delete this entry? this can't be undone.", { confirmLabel: 'delete', cancelLabel: 'keep it' })) {
+    if (
+      await confirm("delete this entry? this can't be undone.", {
+        confirmLabel: 'delete',
+        cancelLabel: 'keep it',
+      })
+    ) {
       deleteEntry(entry.id)
       navigate('/archive')
     }
   }
 
-  const hero = coverImage(entry)
-
   return (
-    <div className="app" onPaste={editing ? onEditPaste : undefined}>
+    <div className="app">
       <CornerSparkle />
 
       <div className="top-row">
@@ -146,69 +119,24 @@ export default function Entry() {
 
         {editing ? (
           <>
-            <div className="photo-editor">
-              <p className="photo-editor-label">photos — click a photo to make it the cover</p>
-              <div className="photo-grid">
-                {images.map((src, i) => (
-                  <div
-                    key={i}
-                    className={`photo-thumb${i === cover ? ' is-cover' : ''}`}
-                    onClick={() => setCover(i)}
-                  >
-                    <img src={src} alt="" />
-                    {i === cover && <span className="cover-badge">cover</span>}
-                    <button
-                      className="photo-remove"
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        removeImage(i)
-                      }}
-                      aria-label="remove photo"
-                    >
-                      ×
-                    </button>
-                  </div>
-                ))}
-                <button className="photo-add" onClick={() => fileRef.current?.click()}>
-                  + add photo
-                </button>
-              </div>
-              <input
-                ref={fileRef}
-                type="file"
-                accept="image/*"
-                multiple
-                hidden
-                onChange={(e) => {
-                  addFiles(e.target.files)
-                  e.target.value = ''
-                }}
-              />
-            </div>
-
             <input
               className="entry-prompt-input"
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}
               placeholder="title"
             />
-            <textarea
-              className="entry-text-input"
-              value={text}
-              onChange={(e) => setText(e.target.value)}
-              placeholder="write your entry…"
+            <BlockEditor
+              blocks={blocks}
+              coverId={coverId}
+              onChange={setBlocks}
+              onSetCover={setCoverId}
             />
           </>
         ) : (
           <>
-            {hero && (
-              <div className="entry-hero">
-                <img src={hero} alt="" />
-              </div>
-            )}
             <p className="entry-prompt">{entry.prompt}</p>
             <p className="entry-date">{formatDate(entry.timestamp)}</p>
-            <div className="entry-body">{entry.text}</div>
+            <BlockView blocks={entry.blocks} />
           </>
         )}
       </article>

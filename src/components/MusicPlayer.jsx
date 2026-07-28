@@ -82,18 +82,16 @@ export default function MusicPlayer() {
       >
         {playing ? <PauseIcon /> : <PlayIcon />}
       </button>
-      {playing && (
-        <input
-          className="music-volume"
-          type="range"
-          min="0"
-          max="1"
-          step="0.01"
-          value={volume}
-          onChange={(e) => setVolume(parseFloat(e.target.value))}
-          aria-label="volume"
-        />
-      )}
+      <input
+        className="music-volume"
+        type="range"
+        min="0"
+        max="1"
+        step="0.01"
+        value={volume}
+        onChange={(e) => setVolume(parseFloat(e.target.value))}
+        aria-label="volume"
+      />
     </div>
   )
 }

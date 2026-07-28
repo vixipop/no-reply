@@ -8,12 +8,17 @@ import {
   loadDraft,
   loadEntries,
   loggedToday,
+  newId,
   saveDraft,
   streak,
+  textToBlocks,
   weekCount,
 } from '../lib/storage'
 import { ArchiveIcon, CornerSparkle, FireIcon, MicIcon, SendStar, SparkleMini } from '../components/icons'
 import { useToast } from '../components/Toast'
+import { BlockEditor } from '../components/BlockEditor'
+
+const emptyBlocks = () => [{ id: newId(), type: 'text', text: '' }]
 
 // confirmation lines shown in the sticky-note toast after a save
 const SAVE_LINES = [
@@ -59,6 +64,10 @@ export default function Home() {
   const [lineCount, setLineCount] = useState(0)
   const [mode, setMode] = useState('quick') // 'quick' | 'journal'
 
+  // journal-mode rich content
+  const [blocks, setBlocks] = useState(emptyBlocks)
+  const [coverId, setCoverId] = useState(null)
+
   // prompt reel
   const [index, setIndex] = useState(0)
   const [prev, setPrev] = useState(null)
@@ -102,16 +111,18 @@ export default function Home() {
     if (d.customTitle) setCustomTitle(d.customTitle)
     if (d.image) setImage(d.image)
     if (d.mode) setMode(d.mode)
+    if (Array.isArray(d.blocks) && d.blocks.length) setBlocks(d.blocks)
+    if (d.coverId) setCoverId(d.coverId)
   }, [])
 
   // keep the draft persisted as it changes
   useEffect(() => {
     const t = setTimeout(
-      () => saveDraft({ text: value, customTitle, image, mode }),
+      () => saveDraft({ text: value, customTitle, image, mode, blocks, coverId }),
       400,
     )
     return () => clearTimeout(t)
-  }, [value, customTitle, image, mode])
+  }, [value, customTitle, image, mode, blocks, coverId])
 
   // grow textarea + track line count (drives the lock / ghost)
   useLayoutEffect(() => {
@@ -194,13 +205,44 @@ export default function Home() {
     }
   }
 
+  // switch into journal, carrying the quick-note text/image into blocks
+  const goJournal = () => {
+    const emptyDefault =
+      blocks.length === 1 && blocks[0].type === 'text' && !blocks[0].text.trim()
+    if (emptyDefault && (value.trim() || image)) {
+      const nb = [{ id: newId(), type: 'text', text: value }]
+      let cid = null
+      if (image) {
+        const ib = { id: newId(), type: 'image', src: image, width: null }
+        nb.push(ib)
+        cid = ib.id
+      }
+      setBlocks(nb)
+      setCoverId(cid)
+      setImage(null)
+    }
+    setMode('journal')
+  }
+
   const save = () => {
-    const text = value.trim()
-    if (!text && !image) return
-    addEntry({ prompt: promptText, text: value, images: image ? [image] : [] })
+    let payload
+    if (mode === 'journal') {
+      const hasText = blocks.some((b) => b.type === 'text' && b.text.trim())
+      const hasImage = blocks.some((b) => b.type === 'image')
+      if (!hasText && !hasImage) return
+      payload = { prompt: promptText, blocks, coverId }
+    } else {
+      const text = value.trim()
+      if (!text && !image) return
+      const built = textToBlocks(value, image)
+      payload = { prompt: promptText, blocks: built.blocks, coverId: built.coverId }
+    }
+    addEntry(payload)
     setEntries(loadEntries())
     setValue('')
     setImage(null)
+    setBlocks(emptyBlocks())
+    setCoverId(null)
     setCustomTitle(null)
     clearDraft()
     toast(SAVE_LINES[Math.floor(Math.random() * SAVE_LINES.length)])
@@ -262,7 +304,7 @@ export default function Home() {
               </button>
               <button
                 className={mode === 'journal' ? 'active' : ''}
-                onClick={() => setMode('journal')}
+                onClick={goJournal}
               >
                 journal
               </button>
@@ -336,15 +378,11 @@ export default function Home() {
 
                 {bar}
 
-                {imagePreview}
-
-                <textarea
-                  ref={taRef}
-                  className="journal-body"
-                  placeholder="start writing…"
-                  value={value}
-                  onChange={(e) => setValue(e.target.value)}
-                  onPaste={onPaste}
+                <BlockEditor
+                  blocks={blocks}
+                  coverId={coverId}
+                  onChange={setBlocks}
+                  onSetCover={setCoverId}
                 />
               </div>
             </div>

@@ -1,8 +1,13 @@
 // Local-only persistence for journal entries.
-// Each entry: { id, prompt, text, images: string[], cover: number, timestamp }
-// (older entries used a single `image` field — normalised on load)
+// Modern entry: { id, prompt, blocks: Block[], coverId, timestamp }
+//   Block = { id, type:'text', text } | { id, type:'image', src, width }
+// Older entries ({ text, images[], cover }) are migrated to blocks on load.
 
 const STORAGE_KEY = 'no-reply-entries'
+
+export function newId() {
+  return makeId()
+}
 
 // Ask the browser to keep this site's data and NOT evict it (e.g. Safari's
 // ~7-day cleanup). Best-effort: resolves true if storage is now persistent.
@@ -16,13 +21,49 @@ export async function requestPersistentStorage() {
   }
 }
 
+// migrate any older entry shape into { blocks, coverId }
 function normalize(entry) {
-  if (Array.isArray(entry.images)) return entry
-  return {
-    ...entry,
-    images: entry.image ? [entry.image] : [],
-    cover: 0,
+  if (Array.isArray(entry.blocks)) return entry
+  const blocks = [{ id: makeId(), type: 'text', text: entry.text || '' }]
+  const imgs = Array.isArray(entry.images) ? entry.images : entry.image ? [entry.image] : []
+  let coverId = null
+  imgs.forEach((src, i) => {
+    const b = { id: makeId(), type: 'image', src, width: null }
+    blocks.push(b)
+    if (i === (entry.cover ?? 0)) coverId = b.id
+  })
+  return { id: entry.id, prompt: entry.prompt, timestamp: entry.timestamp, blocks, coverId }
+}
+
+// build blocks from plain text + an optional single image (used by quick note)
+export function textToBlocks(text, image) {
+  const blocks = [{ id: makeId(), type: 'text', text: text || '' }]
+  let coverId = null
+  if (image) {
+    const b = { id: makeId(), type: 'image', src: image, width: null }
+    blocks.push(b)
+    coverId = b.id
   }
+  return { blocks, coverId }
+}
+
+// the chosen cover image src (or the first image, or null)
+export function coverImage(entry) {
+  if (!entry) return null
+  const blocks = entry.blocks || []
+  const chosen = blocks.find((b) => b.type === 'image' && b.id === entry.coverId)
+  if (chosen) return chosen.src
+  const first = blocks.find((b) => b.type === 'image')
+  return first ? first.src : null
+}
+
+// concatenated text of an entry (for titles / search)
+export function entryText(entry) {
+  return (entry?.blocks || [])
+    .filter((b) => b.type === 'text')
+    .map((b) => b.text)
+    .join('\n\n')
+    .trim()
 }
 
 export function loadEntries() {
@@ -43,14 +84,13 @@ function makeId() {
   return `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
 }
 
-export function addEntry({ prompt, text, images = [] }) {
+export function addEntry({ prompt, blocks, coverId = null }) {
   const entries = loadEntries()
   const entry = {
     id: makeId(),
     prompt,
-    text,
-    images,
-    cover: 0,
+    blocks,
+    coverId,
     timestamp: Date.now(),
   }
   saveEntries([entry, ...entries])
@@ -84,7 +124,10 @@ export function loadDraft() {
 
 export function saveDraft(draft) {
   try {
-    if (draft && (draft.text?.trim() || draft.image)) {
+    const blocksHaveContent = (draft?.blocks || []).some(
+      (b) => (b.type === 'text' && b.text.trim()) || b.type === 'image',
+    )
+    if (draft && (draft.text?.trim() || draft.image || blocksHaveContent)) {
       localStorage.setItem(DRAFT_KEY, JSON.stringify(draft))
     } else {
       localStorage.removeItem(DRAFT_KEY)
@@ -100,14 +143,6 @@ export function clearDraft() {
   } catch {
     /* ignore */
   }
-}
-
-// the chosen cover photo (or first available), or null
-export function coverImage(entry) {
-  if (!entry) return null
-  const imgs = entry.images || []
-  const idx = entry.cover ?? 0
-  return imgs[idx] || imgs[0] || null
 }
 
 function startOfWeek(date) {
