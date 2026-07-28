@@ -71,6 +71,37 @@ export function deleteEntry(id) {
   saveEntries(loadEntries().filter((e) => e.id !== id))
 }
 
+// --- in-progress composer draft (so unsaved new writing survives navigation) ---
+const DRAFT_KEY = 'no-reply-draft'
+
+export function loadDraft() {
+  try {
+    return JSON.parse(localStorage.getItem(DRAFT_KEY)) || null
+  } catch {
+    return null
+  }
+}
+
+export function saveDraft(draft) {
+  try {
+    if (draft && (draft.text?.trim() || draft.image)) {
+      localStorage.setItem(DRAFT_KEY, JSON.stringify(draft))
+    } else {
+      localStorage.removeItem(DRAFT_KEY)
+    }
+  } catch {
+    /* ignore quota errors */
+  }
+}
+
+export function clearDraft() {
+  try {
+    localStorage.removeItem(DRAFT_KEY)
+  } catch {
+    /* ignore */
+  }
+}
+
 // the chosen cover photo (or first available), or null
 export function coverImage(entry) {
   if (!entry) return null

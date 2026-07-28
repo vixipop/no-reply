@@ -60,7 +60,10 @@ after every couple of features I show this back with items checked off.
 ## 6. Archive / time machine
 - [x] Archive of entries · [x] search + week/month/year filters · [x] delete
 - [x] Fully editable entries · [x] preserved indents/paragraphs/blank lines
-- [x] Unsaved-changes guard on entry edit (confirm on back/cancel + tab-close warning)
+- [x] **Autosave** on entry edit (debounced, live saving…/saved indicator) — no guard needed
+- [x] **Draft preservation** — unsaved home-composer writing survives navigation/refresh
+- [x] **Ctrl/Cmd+S** → reassurance toast ("no reply saves your work automatically <3")
+- [x] In-app sticky-note confirm (used for delete)
 - [ ] Content-state copy — title "everything you've told no one", empty, "you've kept 47 thoughts safe"
 - [ ] Flag on-this-day entries in the archive
 

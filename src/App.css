@@ -995,6 +995,13 @@
   gap: 10px;
 }
 
+.saved-indicator {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  color: rgba(247, 244, 213, 0.5);
+}
+
 .photo-editor {
   margin-bottom: 36px;
 }

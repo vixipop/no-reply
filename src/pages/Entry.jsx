@@ -27,22 +27,17 @@ export default function Entry() {
       (cover ?? 0) !== (entry.cover ?? 0) ||
       JSON.stringify(images) !== JSON.stringify(entry.images || []))
 
-  // warn on tab close / refresh while there are unsaved edits
+  // autosave (debounced) — no manual save, no unsaved-changes guard
+  const flushSave = () => {
+    if (!entry) return
+    const safeCover = Math.min(cover, Math.max(0, images.length - 1))
+    setEntry(updateEntry(entry.id, { prompt, text, images, cover: safeCover }))
+  }
   useEffect(() => {
     if (!dirty) return
-    const handler = (e) => {
-      e.preventDefault()
-      e.returnValue = ''
-    }
-    window.addEventListener('beforeunload', handler)
-    return () => window.removeEventListener('beforeunload', handler)
-  }, [dirty])
-
-  // confirm (in-app sticky note) before navigation that would drop unsaved edits
-  const leave = async (fn) => {
-    if (dirty && !(await confirm('you have unsaved changes. save before you leave?'))) return
-    fn()
-  }
+    const t = setTimeout(flushSave, 900)
+    return () => clearTimeout(t)
+  }, [dirty, prompt, text, images, cover]) // eslint-disable-line react-hooks/exhaustive-deps
 
   if (!entry) {
     return (
@@ -95,13 +90,6 @@ export default function Entry() {
     }
   }
 
-  const saveEdits = () => {
-    const safeCover = Math.min(cover, Math.max(0, images.length - 1))
-    const updated = updateEntry(entry.id, { prompt, text, images, cover: safeCover })
-    setEntry(updated)
-    setEditing(false)
-  }
-
   const remove = async () => {
     if (await confirm("delete this entry? this can't be undone.", { confirmLabel: 'delete', cancelLabel: 'keep it' })) {
       deleteEntry(entry.id)
@@ -118,7 +106,10 @@ export default function Entry() {
       <div className="top-row">
         <button
           className="icon-button back"
-          onClick={() => leave(() => navigate('/archive'))}
+          onClick={() => {
+            flushSave()
+            navigate('/archive')
+          }}
           aria-label="back to archive"
         >
           <BackIcon />
@@ -126,11 +117,15 @@ export default function Entry() {
         </button>
         {editing ? (
           <div className="edit-actions">
-            <button className="text-button ghost" onClick={() => leave(() => setEditing(false))}>
-              cancel
-            </button>
-            <button className="text-button" onClick={saveEdits}>
-              save
+            <span className="saved-indicator">{dirty ? 'saving…' : 'saved'}</span>
+            <button
+              className="text-button"
+              onClick={() => {
+                flushSave()
+                setEditing(false)
+              }}
+            >
+              done
             </button>
           </div>
         ) : (

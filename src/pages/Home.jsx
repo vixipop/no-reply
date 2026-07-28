@@ -2,7 +2,16 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import star1 from '../assets/star1.png'
 import star2 from '../assets/star2.png'
-import { addEntry, loadEntries, loggedToday, streak, weekCount } from '../lib/storage'
+import {
+  addEntry,
+  clearDraft,
+  loadDraft,
+  loadEntries,
+  loggedToday,
+  saveDraft,
+  streak,
+  weekCount,
+} from '../lib/storage'
 import { ArchiveIcon, CornerSparkle, FireIcon, MicIcon, SendStar, SparkleMini } from '../components/icons'
 import { useToast } from '../components/Toast'
 
@@ -84,6 +93,25 @@ export default function Home() {
     lockedRef.current = reelLocked
     indexRef.current = index
   }, [reelLocked, index])
+
+  // restore an unsaved draft on load (so writing survives navigation/refresh)
+  useEffect(() => {
+    const d = loadDraft()
+    if (!d) return
+    if (d.text) setValue(d.text)
+    if (d.customTitle) setCustomTitle(d.customTitle)
+    if (d.image) setImage(d.image)
+    if (d.mode) setMode(d.mode)
+  }, [])
+
+  // keep the draft persisted as it changes
+  useEffect(() => {
+    const t = setTimeout(
+      () => saveDraft({ text: value, customTitle, image, mode }),
+      400,
+    )
+    return () => clearTimeout(t)
+  }, [value, customTitle, image, mode])
 
   // grow textarea + track line count (drives the lock / ghost)
   useLayoutEffect(() => {
@@ -174,6 +202,7 @@ export default function Home() {
     setValue('')
     setImage(null)
     setCustomTitle(null)
+    clearDraft()
     toast(SAVE_LINES[Math.floor(Math.random() * SAVE_LINES.length)])
   }
 
