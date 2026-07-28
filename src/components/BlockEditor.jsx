@@ -41,18 +41,36 @@ function TextBlock({ block, placeholder, onChange, onPasteImage }) {
 
 function ImageBlock({ block, isCover, onSetCover, onRemove, onResize }) {
   const ref = useRef(null)
-  const endResize = () => {
-    if (ref.current) onResize(block.id, ref.current.offsetWidth)
+
+  // drag a side handle to resize horizontally (image stays centered)
+  const startResize = (e, side) => {
+    e.preventDefault()
+    e.stopPropagation()
+    const startX = e.clientX
+    const startW = ref.current.offsetWidth
+    const maxW = ref.current.parentElement?.clientWidth || startW
+    const move = (ev) => {
+      const dx = ev.clientX - startX
+      const w = side === 'right' ? startW + dx * 2 : startW - dx * 2
+      onResize(block.id, Math.round(Math.max(90, Math.min(maxW, w))))
+    }
+    const up = () => {
+      window.removeEventListener('pointermove', move)
+      window.removeEventListener('pointerup', up)
+    }
+    window.addEventListener('pointermove', move)
+    window.addEventListener('pointerup', up)
   }
+
   return (
     <div
       className="img-block"
       ref={ref}
       style={block.width ? { width: `${block.width}px` } : undefined}
-      onMouseUp={endResize}
-      onTouchEnd={endResize}
     >
       <img src={block.src} alt="" draggable={false} />
+      <span className="img-handle left" onPointerDown={(e) => startResize(e, 'left')} />
+      <span className="img-handle right" onPointerDown={(e) => startResize(e, 'right')} />
       <div className="img-tools">
         <button
           className={`img-pin${isCover ? ' active' : ''}`}

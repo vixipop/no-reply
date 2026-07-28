@@ -87,7 +87,7 @@ export function BottleIcon() {
 export function PlayIcon() {
   return (
     <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16" aria-hidden="true">
-      <path d="M8 5v14l11-7z" />
+      <path d="M9 6 L18 12 L9 18 Z" />
     </svg>
   )
 }
