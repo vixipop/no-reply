@@ -115,32 +115,35 @@ export default function Entry() {
           <BackIcon />
           <span>archive</span>
         </button>
-        {editing ? (
-          <div className="edit-actions">
-            <span className="saved-indicator">{dirty ? 'saving…' : 'saved'}</span>
-            <button
-              className="text-button"
-              onClick={() => {
-                flushSave()
-                setEditing(false)
-              }}
-            >
-              done
-            </button>
-          </div>
-        ) : (
-          <div className="edit-actions">
-            <button className="text-button danger" onClick={remove} aria-label="delete entry">
-              <TrashIcon />
-            </button>
-            <button className="text-button" onClick={startEdit}>
-              edit
-            </button>
-          </div>
-        )}
       </div>
 
       <article className="entry-page">
+        <div className="entry-actions">
+          {editing ? (
+            <>
+              <span className="saved-indicator">{dirty ? 'saving…' : 'saved'}</span>
+              <button
+                className="text-button"
+                onClick={() => {
+                  flushSave()
+                  setEditing(false)
+                }}
+              >
+                done
+              </button>
+            </>
+          ) : (
+            <>
+              <button className="text-button danger" onClick={remove} aria-label="delete entry">
+                <TrashIcon />
+              </button>
+              <button className="text-button" onClick={startEdit}>
+                edit
+              </button>
+            </>
+          )}
+        </div>
+
         {editing ? (
           <>
             <div className="photo-editor">
