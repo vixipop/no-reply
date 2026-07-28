@@ -72,6 +72,13 @@ after every couple of features I show this back with items checked off.
 - [ ] Day-2 forward hook (after first save)
 - [ ] Self-set gentle nudge — the one opt-in notification ("i'll whisper, not shout")
 
+## 7b. Ambience
+- [x] Persistent ambient **rain** player (top-right, all screens; never pauses on
+      navigation) with a volume slider that appears when playing
+      — procedural Web Audio for now (swap in a real rain file later)
+- [ ] Inline images anywhere in an entry + per-image "set as cover" (removes the
+      top photo grid) — needs the block-based content model (next)
+
 ## 8. Voice & content
 - [ ] Manifesto / hero line
 - [ ] In-voice microcopy pass across the app (lowercase, honest, no corporate)

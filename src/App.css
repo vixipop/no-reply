@@ -3,11 +3,62 @@
   min-height: 100vh;
 }
 
+/* ---- persistent ambient music player (top-right, all screens) ---- */
+.music-player {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  z-index: 120;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 5px;
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(247, 244, 213, 0.12);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.music-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+  background: rgba(255, 171, 231, 0.18);
+  color: #ffabe7;
+  flex-shrink: 0;
+  transition: background 0.2s ease;
+}
+
+.music-toggle:hover {
+  background: rgba(255, 171, 231, 0.3);
+}
+
+/* vertical slider drops below the button while playing — stays in the corner */
+.music-volume {
+  -webkit-appearance: slider-vertical;
+  appearance: slider-vertical;
+  writing-mode: vertical-lr;
+  direction: rtl;
+  width: 20px;
+  height: 78px;
+  margin-bottom: 3px;
+  accent-color: #ffabe7;
+  cursor: pointer;
+}
+
 .top-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 32px 40px 0;
+  /* extra right padding keeps top-right content clear of the fixed music player */
+  padding: 32px 76px 0 40px;
   position: relative;
   z-index: 1;
 }
@@ -367,7 +418,7 @@
 
 .mode-toggle button.active {
   background: rgba(247, 244, 213, 0.12);
-  color: #f7f4d5;
+  color: #ffabe7;
   font-weight: 500;
   box-shadow: inset 0 0 0 1px rgba(247, 244, 213, 0.18),
     0 1px 2px rgba(0, 0, 0, 0.2);
