@@ -127,6 +127,19 @@ export function AlignIcon({ align = 'center' }) {
   )
 }
 
+// text-beside-image: a filled box with text lines flowing next to / under it
+export function WrapIcon({ on = false }) {
+  return (
+    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" aria-hidden="true">
+      <rect x="3" y="4.5" width="8" height="8" rx="1.4" fill={on ? 'currentColor' : 'none'} />
+      <line x1="13.5" y1="6" x2="21" y2="6" />
+      <line x1="13.5" y1="10.5" x2="21" y2="10.5" />
+      <line x1="3" y1="16.5" x2="21" y2="16.5" />
+      <line x1="3" y1="20" x2="21" y2="20" />
+    </svg>
+  )
+}
+
 export function PinIcon() {
   return (
     <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">

@@ -79,6 +79,11 @@ after every couple of features I show this back with items checked off.
 - [x] **Inline images** anywhere in an entry (paste at cursor / drag-drop),
       resizable to any width, with a **pin** to set the archive cover — via a
       block-based content model; old entries migrate automatically
+- [x] **Image alignment** toggle (left / center / right within the column)
+- [x] **Side-by-side block** — a "wrap" toggle flows the following paragraph
+      beside the image (image left↔text right, or mirrored), like a real
+      journal spread; **stacks to image-over-text on mobile** (≤640px) so
+      nothing is stranded on small screens
 
 ## 8. Voice & content
 - [ ] Manifesto / hero line
@@ -90,6 +95,14 @@ after every couple of features I show this back with items checked off.
 
 ## 10. North star — v2
 - [ ] Hivemind whiteboard — you connect your own notes into a visual web
+- [ ] **Freeform scrapbook page (desktop-primary)** — a fixed-bounds "page"
+      where you drag images / stickers / text boxes to absolute positions and
+      lay out your own spread. Deliberately deferred: it needs a fixed bounding
+      box, drag doesn't translate to touch, and a fixed layout can't reflow, so
+      editing would be PC-only (phone = view). Big lift; revisit only after the
+      side-by-side block proves people want more layout control. True
+      text-wraps-*around*-and-under an image (float, magazine style) would need
+      a contentEditable rewrite of the editor — same "later, only if needed."
 
 ---
 

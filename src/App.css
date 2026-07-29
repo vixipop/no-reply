@@ -1136,6 +1136,7 @@
   gap: 6px;
 }
 
+.img-wrap,
 .img-align,
 .img-pin,
 .img-del {
@@ -1153,9 +1154,45 @@
   line-height: 1;
 }
 
-.img-pin.active {
+.img-pin.active,
+.img-wrap.active {
   background: #ffabe7;
   color: #0a3323;
+}
+
+/* side-by-side: image in one column, text flowing beside it */
+.wrap-row {
+  display: flex;
+  gap: 18px;
+  align-items: flex-start;
+  margin: 12px 0;
+}
+.wrap-row.wrap-right {
+  flex-direction: row-reverse;
+}
+.wrap-row .img-block,
+.wrap-row .bv-img {
+  flex: 0 0 auto;
+  margin: 0;
+}
+.wrap-row .block-text,
+.wrap-row .bv-text {
+  flex: 1 1 0;
+  min-width: 0;
+  margin: 0;
+}
+
+/* on narrow screens the row stacks — image on top, text under — so nothing is lost */
+@media (max-width: 640px) {
+  .wrap-row,
+  .wrap-row.wrap-right {
+    flex-direction: column;
+  }
+  .wrap-row .img-block,
+  .wrap-row .bv-img {
+    width: 100% !important;
+    max-width: 100%;
+  }
 }
 
 /* read-only render */
