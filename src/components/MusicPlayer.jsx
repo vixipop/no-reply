@@ -194,6 +194,16 @@ export default function MusicPlayer() {
       </button>
 
       <div className="music-panel">
+        <input
+          className="music-volume"
+          type="range"
+          min="0"
+          max="1"
+          step="0.01"
+          value={volume}
+          onChange={(e) => setVolume(parseFloat(e.target.value))}
+          aria-label="volume"
+        />
         <div className="track-list">
           {TRACKS.map((t) => (
             <button
@@ -205,16 +215,6 @@ export default function MusicPlayer() {
             </button>
           ))}
         </div>
-        <input
-          className="music-volume"
-          type="range"
-          min="0"
-          max="1"
-          step="0.01"
-          value={volume}
-          onChange={(e) => setVolume(parseFloat(e.target.value))}
-          aria-label="volume"
-        />
       </div>
     </div>
   )

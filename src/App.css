@@ -4,35 +4,28 @@
 }
 
 /* ---- persistent ambient music player (top-right, all screens) ---- */
+/* collapsed footprint is JUST the round button; the panel floats below on hover
+   so it never widens the pill or covers the archive button beside it */
 .music-player {
   position: fixed;
   top: 26px;
   right: 16px;
   z-index: 120;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 4px;
-  padding: 4px;
-  border-radius: 15px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(247, 244, 213, 0.1);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
 }
 
 .music-toggle {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 26px;
-  height: 26px;
+  width: 30px;
+  height: 30px;
   border-radius: 50%;
-  border: none;
+  border: 1px solid rgba(247, 244, 213, 0.12);
   cursor: pointer;
   background: rgba(255, 171, 231, 0.16);
   color: #ffabe7;
-  flex-shrink: 0;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   transition: background 0.2s ease;
 }
 
@@ -46,24 +39,42 @@
   background: rgba(255, 171, 231, 0.3);
 }
 
-/* track list + volume — revealed only while hovering the player */
+/* floating card: volume on top, then the track list — revealed on hover/focus */
 .music-panel {
-  width: 132px;
-  max-height: 0;
-  opacity: 0;
-  overflow: hidden;
-  pointer-events: none;
+  position: absolute;
+  top: 38px;
+  right: 0;
+  width: 150px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  transition: max-height 0.22s ease, opacity 0.22s ease;
+  gap: 10px;
+  padding: 12px;
+  border-radius: 14px;
+  background: rgba(10, 51, 35, 0.82);
+  border: 1px solid rgba(247, 244, 213, 0.12);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  opacity: 0;
+  transform: translateY(-6px);
+  pointer-events: none;
+  transition: opacity 0.18s ease, transform 0.18s ease;
 }
 
-.music-player:hover .music-panel {
-  max-height: 220px;
+/* invisible bridge so the cursor can travel from button to card without a gap */
+.music-panel::before {
+  content: '';
+  position: absolute;
+  top: -14px;
+  left: 0;
+  right: 0;
+  height: 14px;
+}
+
+.music-player:hover .music-panel,
+.music-player:focus-within .music-panel {
   opacity: 1;
+  transform: translateY(0);
   pointer-events: auto;
-  padding: 2px 2px 4px;
 }
 
 .track-list {
