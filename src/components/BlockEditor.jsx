@@ -1,6 +1,8 @@
 import { useLayoutEffect, useRef } from 'react'
 import { newId } from '../lib/storage'
-import { PinIcon } from './icons'
+import { AlignIcon, PinIcon } from './icons'
+
+const ALIGN_ORDER = ['center', 'left', 'right']
 
 function readAsDataURL(file) {
   return new Promise((resolve) => {
@@ -39,8 +41,9 @@ function TextBlock({ block, placeholder, onChange, onPasteImage }) {
   )
 }
 
-function ImageBlock({ block, isCover, onSetCover, onRemove, onResize }) {
+function ImageBlock({ block, isCover, onSetCover, onRemove, onResize, onCycleAlign }) {
   const ref = useRef(null)
+  const align = block.align || 'center'
 
   // drag a side handle to resize horizontally (image stays centered)
   const startResize = (e, side) => {
@@ -64,7 +67,7 @@ function ImageBlock({ block, isCover, onSetCover, onRemove, onResize }) {
 
   return (
     <div
-      className="img-block"
+      className={`img-block align-${align}`}
       ref={ref}
       style={block.width ? { width: `${block.width}px` } : undefined}
     >
@@ -72,6 +75,13 @@ function ImageBlock({ block, isCover, onSetCover, onRemove, onResize }) {
       <span className="img-handle left" onPointerDown={(e) => startResize(e, 'left')} />
       <span className="img-handle right" onPointerDown={(e) => startResize(e, 'right')} />
       <div className="img-tools">
+        <button
+          className="img-align"
+          title={`align: ${align} — click to change`}
+          onClick={() => onCycleAlign(block.id)}
+        >
+          <AlignIcon align={align} />
+        </button>
         <button
           className={`img-pin${isCover ? ' active' : ''}`}
           title={isCover ? 'this is the archive cover' : 'make this the archive cover'}
@@ -95,6 +105,15 @@ export function BlockEditor({ blocks, coverId, onChange, onSetCover }) {
 
   const updateWidth = (id, width) =>
     onChange(blocks.map((b) => (b.id === id ? { ...b, width } : b)))
+
+  const cycleAlign = (id) =>
+    onChange(
+      blocks.map((b) => {
+        if (b.id !== id) return b
+        const next = ALIGN_ORDER[(ALIGN_ORDER.indexOf(b.align || 'center') + 1) % 3]
+        return { ...b, align: next }
+      }),
+    )
 
   const removeBlock = (id) => set(blocks.filter((b) => b.id !== id))
 
@@ -152,6 +171,7 @@ export function BlockEditor({ blocks, coverId, onChange, onSetCover }) {
             onSetCover={onSetCover}
             onRemove={removeBlock}
             onResize={updateWidth}
+            onCycleAlign={cycleAlign}
           />
         ),
       )}
@@ -173,7 +193,7 @@ export function BlockView({ blocks }) {
         ) : (
           <img
             key={b.id}
-            className="bv-img"
+            className={`bv-img align-${b.align || 'center'}`}
             src={b.src}
             alt=""
             style={b.width ? { width: `${b.width}px` } : undefined}
