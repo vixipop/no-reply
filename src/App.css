@@ -1075,6 +1075,7 @@
   line-height: 1.7;
   color: #f7f4d5;
   tab-size: 4;
+  min-height: 1.9em; /* keep an easy click target, esp. the trailing line */
 }
 
 .block-text::placeholder {

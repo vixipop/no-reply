@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef } from 'react'
+import { useEffect, useLayoutEffect, useRef } from 'react'
 import { newId } from '../lib/storage'
 import { AlignIcon, PinIcon, WrapIcon } from './icons'
 
@@ -13,11 +13,16 @@ function readAsDataURL(file) {
   })
 }
 
-// always keep a text block at the end so you can keep writing under an image
+// always keep a plain text block at the very end so you can keep writing under
+// an image — including when the last text was pulled *beside* a wrapped image
 function withTrailingText(blocks) {
   if (blocks.length === 0) return [{ id: newId(), type: 'text', text: '' }]
   const last = blocks[blocks.length - 1]
-  if (last.type !== 'text') return [...blocks, { id: newId(), type: 'text', text: '' }]
+  const prev = blocks[blocks.length - 2]
+  const lastIsWrapPaired =
+    last.type === 'text' && prev && prev.type === 'image' && prev.wrap
+  if (last.type !== 'text' || lastIsWrapPaired)
+    return [...blocks, { id: newId(), type: 'text', text: '' }]
   return blocks
 }
 
@@ -127,6 +132,15 @@ function ImageBlock({ block, isCover, onSetCover, onRemove, onResize, onCycleAli
 export function BlockEditor({ blocks, coverId, onChange, onSetCover }) {
   const set = (nb) => onChange(withTrailingText(nb))
 
+  // entries that were saved ending in an image (e.g. a quick note + photo) have
+  // no trailing text block, so there's nowhere to type after the image. Enforce
+  // the invariant on mount / whenever blocks change.
+  useEffect(() => {
+    const fixed = withTrailingText(blocks)
+    if (fixed !== blocks) onChange(fixed)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [blocks])
+
   const updateText = (id, text) =>
     set(blocks.map((b) => (b.id === id ? { ...b, text } : b)))
 
@@ -206,7 +220,13 @@ export function BlockEditor({ blocks, coverId, onChange, onSetCover }) {
   const renderText = (b, i) => (
     <TextBlock
       block={b}
-      placeholder={i === 0 ? 'start writing… (paste or drop images anywhere)' : ''}
+      placeholder={
+        i === 0
+          ? 'start writing… (paste or drop images anywhere)'
+          : i === blocks.length - 1
+            ? 'keep writing…'
+            : ''
+      }
       onChange={updateText}
       onPasteImage={pasteImage}
     />
