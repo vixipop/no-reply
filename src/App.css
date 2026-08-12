@@ -349,6 +349,8 @@
 }
 
 .chatbox {
+  position: relative;
+  z-index: 1;
   background: rgba(255, 255, 255, 0.03);
   border: 1.5px dashed #6b8c76;
   border-radius: 14px;
@@ -356,6 +358,77 @@
   display: flex;
   flex-direction: column;
   gap: 10px;
+}
+
+/* glowing grid-line crosses that mark the top corners of the writing zone —
+   a lit horizontal + vertical grid line, brightest where they cross. sits
+   behind the box so decorations elsewhere stay clear of this area. */
+.zone-glow {
+  position: absolute;
+  top: 0;
+  width: 44px;
+  height: 44px;
+  z-index: 0;
+  pointer-events: none;
+  border-radius: 50%;
+  /* soft green core bloom at the corner */
+  background: radial-gradient(
+    circle,
+    rgba(119, 255, 148, 0.4) 0%,
+    rgba(119, 255, 148, 0) 68%
+  );
+}
+.zone-glow.tl {
+  left: 0;
+  transform: translate(-50%, -50%);
+}
+.zone-glow.tr {
+  right: 0;
+  transform: translate(50%, -50%);
+}
+.zone-glow::before,
+.zone-glow::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  filter: blur(0.6px);
+}
+/* horizontal lit grid line */
+.zone-glow::before {
+  width: 280px;
+  height: 2px;
+  transform: translate(-50%, -50%);
+  background: linear-gradient(
+    90deg,
+    rgba(119, 255, 148, 0) 0%,
+    rgba(119, 255, 148, 0) 14%,
+    rgba(119, 255, 148, 0.75) 50%,
+    rgba(119, 255, 148, 0) 86%,
+    rgba(119, 255, 148, 0) 100%
+  );
+}
+/* vertical lit grid line */
+.zone-glow::after {
+  width: 2px;
+  height: 230px;
+  transform: translate(-50%, -50%);
+  background: linear-gradient(
+    180deg,
+    rgba(119, 255, 148, 0) 0%,
+    rgba(119, 255, 148, 0) 14%,
+    rgba(119, 255, 148, 0.75) 50%,
+    rgba(119, 255, 148, 0) 86%,
+    rgba(119, 255, 148, 0) 100%
+  );
+}
+@media (max-width: 560px) {
+  .zone-glow::before {
+    width: 200px;
+  }
+  .zone-glow::after {
+    height: 180px;
+  }
 }
 
 .chatbox-row {

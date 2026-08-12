@@ -423,6 +423,8 @@ export default function Home() {
             </div>
 
             <div className="chat-area">
+              <span className="zone-glow tl" aria-hidden="true" />
+              <span className="zone-glow tr" aria-hidden="true" />
               <div className="chatbox">
                 {imagePreview}
                 <div className="chatbox-row">
