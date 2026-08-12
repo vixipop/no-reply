@@ -363,67 +363,62 @@
 /* glowing grid-line crosses that mark the top corners of the writing zone —
    a lit horizontal + vertical grid line, brightest where they cross. sits
    behind the box so decorations elsewhere stay clear of this area. */
-/* wraps the whole writing zone (prompt + input); the glints mark its top corners */
+/* wraps the whole writing zone (prompt + input); brackets mark its top corners */
 .write-zone {
   position: relative;
   max-width: 660px;
   margin: 0 auto;
 }
 
-/* small, faint green glint at each top corner of the writing zone */
+/* green corner bracket at each top corner — an L of two soft glowing arms,
+   brightest at the corner, fading along each arm, so the two marks read as a
+   frame around the writing area rather than floating dots */
 .zone-glow {
   position: absolute;
-  top: -6px;
-  width: 12px;
-  height: 12px;
+  top: -10px;
+  width: 0;
+  height: 0;
   z-index: 0;
   pointer-events: none;
-  border-radius: 50%;
-  background: radial-gradient(
-    circle,
-    rgba(119, 255, 148, 0.3) 0%,
-    rgba(119, 255, 148, 0) 72%
-  );
 }
 .zone-glow.tl {
-  left: 0;
-  transform: translate(-50%, -50%);
+  left: -10px;
 }
 .zone-glow.tr {
-  right: 0;
-  transform: translate(50%, -50%);
+  right: -10px;
 }
 .zone-glow::before,
 .zone-glow::after {
   content: '';
   position: absolute;
-  top: 50%;
-  left: 50%;
-  filter: blur(0.7px);
+  top: 0;
+  filter: blur(0.6px);
 }
-/* tiny horizontal wisp */
+/* horizontal arm of the bracket */
 .zone-glow::before {
-  width: 34px;
-  height: 1.5px;
-  transform: translate(-50%, -50%);
-  background: linear-gradient(
-    90deg,
-    rgba(119, 255, 148, 0) 0%,
-    rgba(119, 255, 148, 0.34) 50%,
-    rgba(119, 255, 148, 0) 100%
-  );
+  width: 30px;
+  height: 2px;
 }
-/* tiny vertical wisp */
+/* vertical arm of the bracket */
 .zone-glow::after {
-  width: 1.5px;
-  height: 34px;
-  transform: translate(-50%, -50%);
-  background: linear-gradient(
-    180deg,
-    rgba(119, 255, 148, 0) 0%,
-    rgba(119, 255, 148, 0.34) 50%,
-    rgba(119, 255, 148, 0) 100%
-  );
+  width: 2px;
+  height: 30px;
+}
+.zone-glow.tl::before {
+  left: 0;
+  background: linear-gradient(90deg, rgba(119, 255, 148, 0.5), rgba(119, 255, 148, 0));
+}
+.zone-glow.tl::after {
+  left: 0;
+  background: linear-gradient(180deg, rgba(119, 255, 148, 0.5), rgba(119, 255, 148, 0));
+}
+.zone-glow.tr::before {
+  right: 0;
+  background: linear-gradient(270deg, rgba(119, 255, 148, 0.5), rgba(119, 255, 148, 0));
+}
+.zone-glow.tr::after {
+  right: 0;
+  background: linear-gradient(180deg, rgba(119, 255, 148, 0.5), rgba(119, 255, 148, 0));
 }
 
 .chatbox-row {
