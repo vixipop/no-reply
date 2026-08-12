@@ -363,19 +363,26 @@
 /* glowing grid-line crosses that mark the top corners of the writing zone —
    a lit horizontal + vertical grid line, brightest where they cross. sits
    behind the box so decorations elsewhere stay clear of this area. */
+/* wraps the whole writing zone (prompt + input); the glints mark its top corners */
+.write-zone {
+  position: relative;
+  max-width: 660px;
+  margin: 0 auto;
+}
+
+/* small, faint green glint at each top corner of the writing zone */
 .zone-glow {
   position: absolute;
-  top: 0;
-  width: 30px;
-  height: 30px;
+  top: -6px;
+  width: 12px;
+  height: 12px;
   z-index: 0;
   pointer-events: none;
   border-radius: 50%;
-  /* faint green core bloom right at the corner */
   background: radial-gradient(
     circle,
-    rgba(119, 255, 148, 0.22) 0%,
-    rgba(119, 255, 148, 0) 70%
+    rgba(119, 255, 148, 0.3) 0%,
+    rgba(119, 255, 148, 0) 72%
   );
 }
 .zone-glow.tl {
@@ -392,39 +399,31 @@
   position: absolute;
   top: 50%;
   left: 50%;
-  filter: blur(1.3px);
+  filter: blur(0.7px);
 }
-/* short, soft horizontal wisp */
+/* tiny horizontal wisp */
 .zone-glow::before {
-  width: 120px;
-  height: 2px;
+  width: 34px;
+  height: 1.5px;
   transform: translate(-50%, -50%);
   background: linear-gradient(
     90deg,
     rgba(119, 255, 148, 0) 0%,
-    rgba(119, 255, 148, 0.28) 50%,
+    rgba(119, 255, 148, 0.34) 50%,
     rgba(119, 255, 148, 0) 100%
   );
 }
-/* short, soft vertical wisp */
+/* tiny vertical wisp */
 .zone-glow::after {
-  width: 2px;
-  height: 140px;
+  width: 1.5px;
+  height: 34px;
   transform: translate(-50%, -50%);
   background: linear-gradient(
     180deg,
     rgba(119, 255, 148, 0) 0%,
-    rgba(119, 255, 148, 0.28) 50%,
+    rgba(119, 255, 148, 0.34) 50%,
     rgba(119, 255, 148, 0) 100%
   );
-}
-@media (max-width: 560px) {
-  .zone-glow::before {
-    width: 90px;
-  }
-  .zone-glow::after {
-    height: 110px;
-  }
 }
 
 .chatbox-row {
