@@ -363,62 +363,68 @@
 /* glowing grid-line crosses that mark the top corners of the writing zone —
    a lit horizontal + vertical grid line, brightest where they cross. sits
    behind the box so decorations elsewhere stay clear of this area. */
-/* wraps the whole writing zone (prompt + input); brackets mark its top corners */
+/* wraps the whole writing zone (ghost + prompt + input) */
 .write-zone {
   position: relative;
   max-width: 660px;
   margin: 0 auto;
 }
 
-/* green corner bracket at each top corner — an L of two soft glowing arms,
-   brightest at the corner, fading along each arm, so the two marks read as a
-   frame around the writing area rather than floating dots */
+/* a tiny, faint green sparkle — a glint of light sitting on the background
+   grid, above the ghost text and the prompt, at the top corners of the zone */
 .zone-glow {
   position: absolute;
-  top: -10px;
-  width: 0;
-  height: 0;
+  top: -96px;
+  width: 7px;
+  height: 7px;
   z-index: 0;
   pointer-events: none;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgba(119, 255, 148, 0.26) 0%,
+    rgba(119, 255, 148, 0) 70%
+  );
 }
 .zone-glow.tl {
-  left: -10px;
+  left: 0;
+  transform: translate(-50%, -50%);
 }
 .zone-glow.tr {
-  right: -10px;
+  right: 0;
+  transform: translate(50%, -50%);
 }
 .zone-glow::before,
 .zone-glow::after {
   content: '';
   position: absolute;
-  top: 0;
-  filter: blur(0.6px);
+  top: 50%;
+  left: 50%;
+  filter: blur(0.5px);
 }
-/* horizontal arm of the bracket */
+/* horizontal ray of the sparkle */
 .zone-glow::before {
-  width: 30px;
-  height: 2px;
+  width: 20px;
+  height: 1px;
+  transform: translate(-50%, -50%);
+  background: linear-gradient(
+    90deg,
+    rgba(119, 255, 148, 0) 0%,
+    rgba(119, 255, 148, 0.36) 50%,
+    rgba(119, 255, 148, 0) 100%
+  );
 }
-/* vertical arm of the bracket */
+/* vertical ray of the sparkle */
 .zone-glow::after {
-  width: 2px;
-  height: 30px;
-}
-.zone-glow.tl::before {
-  left: 0;
-  background: linear-gradient(90deg, rgba(119, 255, 148, 0.5), rgba(119, 255, 148, 0));
-}
-.zone-glow.tl::after {
-  left: 0;
-  background: linear-gradient(180deg, rgba(119, 255, 148, 0.5), rgba(119, 255, 148, 0));
-}
-.zone-glow.tr::before {
-  right: 0;
-  background: linear-gradient(270deg, rgba(119, 255, 148, 0.5), rgba(119, 255, 148, 0));
-}
-.zone-glow.tr::after {
-  right: 0;
-  background: linear-gradient(180deg, rgba(119, 255, 148, 0.5), rgba(119, 255, 148, 0));
+  width: 1px;
+  height: 20px;
+  transform: translate(-50%, -50%);
+  background: linear-gradient(
+    180deg,
+    rgba(119, 255, 148, 0) 0%,
+    rgba(119, 255, 148, 0.36) 50%,
+    rgba(119, 255, 148, 0) 100%
+  );
 }
 
 .chatbox-row {
