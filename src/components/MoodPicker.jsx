@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useId, useRef, useState } from 'react'
 
 // the mood set (order = display order). `color` is what the face "colours in" to.
 export const MOODS = [
@@ -72,6 +72,8 @@ function Features({ mood }) {
 }
 
 export function MoodFace({ mood, color, filled = false, className = '' }) {
+  const uid = useId().replace(/:/g, '')
+  const clipId = `mfclip-${uid}`
   return (
     <svg
       viewBox="0 0 24 24"
@@ -79,7 +81,18 @@ export function MoodFace({ mood, color, filled = false, className = '' }) {
       style={{ '--c': color }}
       aria-hidden="true"
     >
-      <circle className="mf-fill" cx="12" cy="12" r="9" />
+      <defs>
+        <clipPath id={clipId}>
+          <circle cx="12" cy="12" r="9" />
+        </clipPath>
+      </defs>
+      {/* a diagonal crayon scribble that draws itself on to "colour in" the face */}
+      <path
+        className="mf-scribble"
+        clipPath={`url(#${clipId})`}
+        pathLength="100"
+        d="M3.5 16 L6.5 4.5 L9.5 18.5 L12.5 4.5 L15.5 18.5 L18.5 5.5 L21 14 L18 16.5 L15 6 L12 16.5 L9 6 L5.5 15.5"
+      />
       <circle className="mf-ring" cx="12" cy="12" r="9" />
       <g className="mf-feat">
         <Features mood={mood} />

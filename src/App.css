@@ -1493,9 +1493,16 @@
   stroke: var(--c);
   stroke-width: 1.6;
 }
-.mood-face .mf-fill {
-  fill: var(--c);
-  clip-path: inset(100% 0 0 0);
+/* the crayon scribble — hidden until a mood is picked, then it "draws" on */
+.mood-face .mf-scribble {
+  fill: none;
+  stroke: var(--c);
+  stroke-width: 1.9;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-opacity: 0.82;
+  stroke-dasharray: 100;
+  stroke-dashoffset: 100;
 }
 .mood-face .mf-feat path {
   fill: none;
@@ -1503,16 +1510,16 @@
   stroke-width: 1.6;
   stroke-linecap: round;
   stroke-linejoin: round;
-  transition: stroke 0.25s ease 0.22s;
+  transition: stroke 0.2s ease 0.42s;
 }
 .mood-face .mf-feat circle {
   fill: var(--c);
   stroke: none;
-  transition: fill 0.25s ease 0.22s;
+  transition: fill 0.2s ease 0.42s;
 }
-/* when a mood is chosen, colour pours up into the face and features go dark */
-.mood-face.filled .mf-fill {
-  animation: moodFill 0.5s cubic-bezier(0.34, 1.32, 0.6, 1) forwards;
+/* when a mood is chosen, the crayon scribbles the colour in and features go dark */
+.mood-face.filled .mf-scribble {
+  animation: scribbleIn 0.85s ease forwards;
 }
 .mood-face.filled .mf-feat path {
   stroke: #0a3323;
@@ -1520,18 +1527,15 @@
 .mood-face.filled .mf-feat circle {
   fill: #0a3323;
 }
-@keyframes moodFill {
-  from {
-    clip-path: inset(100% 0 0 0);
-  }
+@keyframes scribbleIn {
   to {
-    clip-path: inset(0 0 0 0);
+    stroke-dashoffset: 0;
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .mood-face.filled .mf-fill {
+  .mood-face.filled .mf-scribble {
     animation: none;
-    clip-path: inset(0 0 0 0);
+    stroke-dashoffset: 0;
   }
 }
 
