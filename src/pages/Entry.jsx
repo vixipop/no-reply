@@ -4,6 +4,7 @@ import { deleteEntry, formatDate, getEntry, updateEntry } from '../lib/storage'
 import { BackIcon, CornerSparkle, TrashIcon } from '../components/icons'
 import { useConfirm } from '../components/Confirm'
 import { BlockEditor, BlockView } from '../components/BlockEditor'
+import MoodPicker, { MoodFace, moodMeta } from '../components/MoodPicker'
 
 export default function Entry() {
   const { id } = useParams()
@@ -16,6 +17,7 @@ export default function Entry() {
   const [prompt, setPrompt] = useState(initial?.prompt || '')
   const [blocks, setBlocks] = useState(initial?.blocks || [])
   const [coverId, setCoverId] = useState(initial?.coverId || null)
+  const [mood, setMood] = useState(initial?.mood || null)
 
   // are there unsaved edits?
   const dirty =
@@ -23,18 +25,19 @@ export default function Entry() {
     !!entry &&
     (prompt !== entry.prompt ||
       coverId !== entry.coverId ||
+      mood !== (entry.mood || null) ||
       JSON.stringify(blocks) !== JSON.stringify(entry.blocks))
 
   // autosave (debounced) — no manual save, no unsaved-changes guard
   const flushSave = () => {
     if (!entry) return
-    setEntry(updateEntry(entry.id, { prompt, blocks, coverId }))
+    setEntry(updateEntry(entry.id, { prompt, blocks, coverId, mood }))
   }
   useEffect(() => {
     if (!dirty) return
     const t = setTimeout(flushSave, 900)
     return () => clearTimeout(t)
-  }, [dirty, prompt, blocks, coverId]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [dirty, prompt, blocks, coverId, mood]) // eslint-disable-line react-hooks/exhaustive-deps
 
   if (!entry) {
     return (
@@ -57,8 +60,11 @@ export default function Entry() {
     setPrompt(entry.prompt)
     setBlocks(entry.blocks || [])
     setCoverId(entry.coverId || null)
+    setMood(entry.mood || null)
     setEditing(true)
   }
+
+  const readMood = moodMeta(entry.mood)
 
   const remove = async () => {
     if (
@@ -119,12 +125,15 @@ export default function Entry() {
 
         {editing ? (
           <>
-            <input
-              className="entry-prompt-input"
-              value={prompt}
-              onChange={(e) => setPrompt(e.target.value)}
-              placeholder="title"
-            />
+            <div className="entry-title-row">
+              <input
+                className="entry-prompt-input"
+                value={prompt}
+                onChange={(e) => setPrompt(e.target.value)}
+                placeholder="title"
+              />
+              <MoodPicker value={mood} onChange={setMood} align="right" />
+            </div>
             <BlockEditor
               blocks={blocks}
               coverId={coverId}
@@ -135,7 +144,15 @@ export default function Entry() {
         ) : (
           <>
             <p className="entry-prompt">{entry.prompt}</p>
-            <p className="entry-date">{formatDate(entry.timestamp)}</p>
+            <p className="entry-date">
+              {formatDate(entry.timestamp)}
+              {readMood && (
+                <span className="entry-mood" style={{ '--c': readMood.color }}>
+                  <MoodFace mood={readMood.id} color={readMood.color} filled />
+                  {readMood.label}
+                </span>
+              )}
+            </p>
             <BlockView blocks={entry.blocks} />
           </>
         )}

@@ -23,7 +23,7 @@ export async function requestPersistentStorage() {
 
 // migrate any older entry shape into { blocks, coverId }
 function normalize(entry) {
-  if (Array.isArray(entry.blocks)) return entry
+  if (Array.isArray(entry.blocks)) return { mood: null, ...entry }
   const blocks = [{ id: makeId(), type: 'text', text: entry.text || '' }]
   const imgs = Array.isArray(entry.images) ? entry.images : entry.image ? [entry.image] : []
   let coverId = null
@@ -32,7 +32,14 @@ function normalize(entry) {
     blocks.push(b)
     if (i === (entry.cover ?? 0)) coverId = b.id
   })
-  return { id: entry.id, prompt: entry.prompt, timestamp: entry.timestamp, blocks, coverId }
+  return {
+    id: entry.id,
+    prompt: entry.prompt,
+    timestamp: entry.timestamp,
+    blocks,
+    coverId,
+    mood: entry.mood ?? null,
+  }
 }
 
 // build blocks from plain text + an optional single image (used by quick note)
@@ -84,13 +91,14 @@ function makeId() {
   return `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
 }
 
-export function addEntry({ prompt, blocks, coverId = null }) {
+export function addEntry({ prompt, blocks, coverId = null, mood = null }) {
   const entries = loadEntries()
   const entry = {
     id: makeId(),
     prompt,
     blocks,
     coverId,
+    mood,
     timestamp: Date.now(),
   }
   saveEntries([entry, ...entries])

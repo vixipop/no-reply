@@ -17,6 +17,7 @@ import {
 import { ArchiveIcon, CornerSparkle, FireIcon, MicIcon, SendStar, SparkleMini } from '../components/icons'
 import { useToast } from '../components/Toast'
 import { BlockEditor } from '../components/BlockEditor'
+import MoodPicker from '../components/MoodPicker'
 
 const emptyBlocks = () => [{ id: newId(), type: 'text', text: '' }]
 
@@ -67,6 +68,7 @@ export default function Home() {
   // journal-mode rich content
   const [blocks, setBlocks] = useState(emptyBlocks)
   const [coverId, setCoverId] = useState(null)
+  const [mood, setMood] = useState(null)
 
   // prompt reel
   const [index, setIndex] = useState(0)
@@ -113,16 +115,17 @@ export default function Home() {
     if (d.mode) setMode(d.mode)
     if (Array.isArray(d.blocks) && d.blocks.length) setBlocks(d.blocks)
     if (d.coverId) setCoverId(d.coverId)
+    if (d.mood) setMood(d.mood)
   }, [])
 
   // keep the draft persisted as it changes
   useEffect(() => {
     const t = setTimeout(
-      () => saveDraft({ text: value, customTitle, image, mode, blocks, coverId }),
+      () => saveDraft({ text: value, customTitle, image, mode, blocks, coverId, mood }),
       400,
     )
     return () => clearTimeout(t)
-  }, [value, customTitle, image, mode, blocks, coverId])
+  }, [value, customTitle, image, mode, blocks, coverId, mood])
 
   // grow textarea + track line count (drives the lock / ghost)
   useLayoutEffect(() => {
@@ -230,12 +233,12 @@ export default function Home() {
       const hasText = blocks.some((b) => b.type === 'text' && b.text.trim())
       const hasImage = blocks.some((b) => b.type === 'image')
       if (!hasText && !hasImage) return
-      payload = { prompt: promptText, blocks, coverId }
+      payload = { prompt: promptText, blocks, coverId, mood }
     } else {
       const text = value.trim()
       if (!text && !image) return
       const built = textToBlocks(value, image)
-      payload = { prompt: promptText, blocks: built.blocks, coverId: built.coverId }
+      payload = { prompt: promptText, blocks: built.blocks, coverId: built.coverId, mood }
     }
     addEntry(payload)
     setEntries(loadEntries())
@@ -244,6 +247,7 @@ export default function Home() {
     setBlocks(emptyBlocks())
     setCoverId(null)
     setCustomTitle(null)
+    setMood(null)
     clearDraft()
     toast(SAVE_LINES[Math.floor(Math.random() * SAVE_LINES.length)])
   }
@@ -310,6 +314,7 @@ export default function Home() {
               </button>
             </div>
             <div className="bar-right">
+              {mode === 'journal' && <MoodPicker value={mood} onChange={setMood} />}
               {mode === 'journal' && (
                 <button className="seal-btn" onClick={save}>
                   seal ↳

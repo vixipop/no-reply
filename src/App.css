@@ -1455,3 +1455,162 @@
   color: rgba(247, 244, 213, 0.45);
   margin-top: 12px;
 }
+
+/* ---- mood picker (journal mode + entry edit) ---- */
+.mood-picker {
+  position: relative;
+  display: inline-flex;
+}
+
+.mood-trigger {
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: 1px solid rgba(247, 244, 213, 0.14);
+  background: rgba(255, 255, 255, 0.03);
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+.mood-trigger:hover {
+  background: rgba(255, 255, 255, 0.07);
+}
+.mood-trigger.has-mood {
+  border-color: color-mix(in srgb, var(--c, transparent) 40%, transparent);
+}
+
+/* the fill-in face */
+.mood-face {
+  width: 22px;
+  height: 22px;
+  display: block;
+  overflow: visible;
+}
+.mood-face .mf-ring {
+  fill: none;
+  stroke: var(--c);
+  stroke-width: 1.6;
+}
+.mood-face .mf-fill {
+  fill: var(--c);
+  clip-path: inset(100% 0 0 0);
+}
+.mood-face .mf-feat path {
+  fill: none;
+  stroke: var(--c);
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: stroke 0.25s ease 0.22s;
+}
+.mood-face .mf-feat circle {
+  fill: var(--c);
+  stroke: none;
+  transition: fill 0.25s ease 0.22s;
+}
+/* when a mood is chosen, colour pours up into the face and features go dark */
+.mood-face.filled .mf-fill {
+  animation: moodFill 0.5s cubic-bezier(0.34, 1.32, 0.6, 1) forwards;
+}
+.mood-face.filled .mf-feat path {
+  stroke: #0a3323;
+}
+.mood-face.filled .mf-feat circle {
+  fill: #0a3323;
+}
+@keyframes moodFill {
+  from {
+    clip-path: inset(100% 0 0 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .mood-face.filled .mf-fill {
+    animation: none;
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+/* the popover list of moods */
+.mood-panel {
+  position: absolute;
+  top: calc(100% + 10px);
+  left: 0;
+  z-index: 60;
+  width: 236px;
+  padding: 8px;
+  border-radius: 14px;
+  background: rgba(10, 51, 35, 0.95);
+  border: 1px solid rgba(247, 244, 213, 0.12);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.4);
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.mood-picker.right .mood-panel {
+  left: auto;
+  right: 0;
+}
+.mood-panel-head {
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgba(247, 244, 213, 0.45);
+  padding: 4px 8px 7px;
+}
+.mood-opt {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 8px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  border-radius: 10px;
+  text-align: left;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 13.5px;
+  color: rgba(247, 244, 213, 0.82);
+  transition: background 0.15s ease;
+}
+.mood-opt:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+.mood-opt.active {
+  color: #f7f4d5;
+}
+.mood-opt .mood-face {
+  width: 26px;
+  height: 26px;
+  flex: none;
+}
+
+/* entry edit: title input + mood picker on one row */
+.entry-title-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.entry-title-row .entry-prompt-input {
+  flex: 1;
+  min-width: 0;
+}
+
+/* entry read: the chosen mood beside the date */
+.entry-mood {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: 12px;
+  color: var(--c, rgba(247, 244, 213, 0.7));
+}
+.entry-mood .mood-face {
+  width: 18px;
+  height: 18px;
+}
