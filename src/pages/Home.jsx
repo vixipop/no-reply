@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import star1 from '../assets/star1.png'
 import star2 from '../assets/star2.png'
 import {
@@ -14,7 +14,7 @@ import {
   textToBlocks,
   weekCount,
 } from '../lib/storage'
-import { ArchiveIcon, CornerSparkle, FireIcon, MicIcon, SendStar, SparkleMini } from '../components/icons'
+import { CornerSparkle, FireIcon, MicIcon, SendStar, SparkleMini } from '../components/icons'
 import { useToast } from '../components/Toast'
 import { BlockEditor } from '../components/BlockEditor'
 import MoodPicker from '../components/MoodPicker'
@@ -59,6 +59,7 @@ function renderPrompt(text, glow) {
 export default function Home() {
   const navigate = useNavigate()
   const toast = useToast()
+  const [searchParams, setSearchParams] = useSearchParams()
   const [entries, setEntries] = useState(loadEntries)
   const [value, setValue] = useState('')
   const [image, setImage] = useState(null)
@@ -126,6 +127,19 @@ export default function Home() {
     )
     return () => clearTimeout(t)
   }, [value, customTitle, image, mode, blocks, coverId, mood])
+
+  // the "+" button opens a fresh journal page with a blank title
+  useEffect(() => {
+    if (!searchParams.get('new')) return
+    setMode('journal')
+    setCustomTitle('') // '' (not null) → blank title, shows the "title" placeholder
+    setBlocks(emptyBlocks())
+    setCoverId(null)
+    setMood(null)
+    setValue('')
+    setImage(null)
+    setSearchParams({}, { replace: true })
+  }, [searchParams]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // grow textarea + track line count (drives the lock / ghost)
   useLayoutEffect(() => {
@@ -286,13 +300,11 @@ export default function Home() {
           <FireIcon color={didToday ? '#FFABE7' : '#7E8B84'} />
           <span className="day-label">{dayStreak} day streak</span>
         </div>
-        <button
-          className="icon-button"
-          onClick={() => navigate('/archive')}
-          aria-label="open archive"
-        >
-          <ArchiveIcon />
-        </button>
+        <nav className="top-nav">
+          <Link to="/archive">archive</Link>
+          <Link to="/mirror">mirror</Link>
+          <Link to="/settings">settings</Link>
+        </nav>
       </div>
 
       {/* the mode toggle (bottom-left) + room on the right for future tools */}
@@ -376,7 +388,11 @@ export default function Home() {
                       onClick={() => setEditing(true)}
                       title="click to edit the title"
                     >
-                      {renderPrompt(promptText, promptGlow)}
+                      {promptText ? (
+                        renderPrompt(promptText, promptGlow)
+                      ) : (
+                        <span className="title-placeholder">title</span>
+                      )}
                     </div>
                   )}
                 </div>
