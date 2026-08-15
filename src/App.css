@@ -220,7 +220,7 @@
   /* wide enough that the ghost line never clips on the left/right edges */
   width: 760px;
   /* only the bottom ~half of the 40px glyphs shows through */
-  height: 28px;
+  height: 31px;
   overflow: hidden;
   /* bottom of the strip stays opaque, fading smoothly to transparent at the top */
   -webkit-mask-image: linear-gradient(to top, black 0%, black 26%, transparent 100%);
@@ -240,9 +240,9 @@
   font-weight: 400;
   line-height: 1;
   color: #f7f4d5;
-  opacity: 0.55;
+  opacity: 0.62;
   white-space: nowrap;
-  filter: blur(4px);
+  filter: blur(1.6px);
   pointer-events: none;
 }
 
