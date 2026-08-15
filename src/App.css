@@ -1430,7 +1430,7 @@
 .mood-face .mf-scribble {
   fill: none;
   stroke: var(--c);
-  stroke-width: 2.1;
+  stroke-width: 2.8;
   stroke-linecap: round;
   stroke-linejoin: round;
   stroke-opacity: 0.85;
@@ -1563,6 +1563,9 @@
   z-index: 2;
 }
 .top-nav a {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
   font-family: 'Space Grotesk', sans-serif;
   font-size: 14px;
   color: rgba(247, 244, 213, 0.6);
@@ -1572,6 +1575,11 @@
 }
 .top-nav a:hover {
   color: #f7f4d5;
+}
+.top-nav a svg {
+  width: 16px;
+  height: 16px;
+  opacity: 1;
 }
 
 /* floating "new entry" button (bottom-right, all pages) */

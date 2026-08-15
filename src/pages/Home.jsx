@@ -14,7 +14,16 @@ import {
   textToBlocks,
   weekCount,
 } from '../lib/storage'
-import { CornerSparkle, FireIcon, MicIcon, SendStar, SparkleMini } from '../components/icons'
+import {
+  ArchiveIcon,
+  CogIcon,
+  CornerSparkle,
+  FireIcon,
+  MicIcon,
+  MirrorIcon,
+  SendStar,
+  SparkleMini,
+} from '../components/icons'
 import { useToast } from '../components/Toast'
 import { BlockEditor } from '../components/BlockEditor'
 import MoodPicker from '../components/MoodPicker'
@@ -301,9 +310,18 @@ export default function Home() {
           <span className="day-label">{dayStreak} day streak</span>
         </div>
         <nav className="top-nav">
-          <Link to="/archive">archive</Link>
-          <Link to="/mirror">mirror</Link>
-          <Link to="/settings">settings</Link>
+          <Link to="/archive">
+            <ArchiveIcon />
+            archive
+          </Link>
+          <Link to="/mirror">
+            <MirrorIcon />
+            mirror
+          </Link>
+          <Link to="/settings">
+            <CogIcon />
+            settings
+          </Link>
         </nav>
       </div>
 

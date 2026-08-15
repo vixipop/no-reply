@@ -12,12 +12,35 @@ export function ArchiveIcon() {
       className="archive-icon"
       viewBox="0 0 24 24"
       fill="none"
-      stroke="#F7F4D5"
-      strokeWidth="1.4"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
     >
       <rect x="3" y="7" width="18" height="13" rx="1.5" />
       <path d="M3 7l2-3h14l2 3" />
       <path d="M10 12h4" />
+    </svg>
+  )
+}
+
+// hand mirror — oval glass + handle
+export function MirrorIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <ellipse cx="12" cy="8.5" rx="6" ry="6.5" />
+      <path d="M12 15v5.5" />
+      <path d="M9.5 21h5" />
+    </svg>
+  )
+}
+
+// settings cog — toothed gear ring + centre
+export function CogIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M18.2 12 L16.25 13.76 L16.38 16.38 L13.76 16.25 L12 18.2 L10.24 16.25 L7.62 16.38 L7.75 13.76 L5.8 12 L7.75 10.24 L7.62 7.62 L10.24 7.75 L12 5.8 L13.76 7.75 L16.38 7.62 L16.25 10.24 Z" />
+      <circle cx="12" cy="12" r="2.3" />
     </svg>
   )
 }
