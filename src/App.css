@@ -293,19 +293,19 @@
 .prompt-layer.enter-up { animation: enterUp 0.5s cubic-bezier(0.22, 0.61, 0.36, 1); }
 .prompt-layer.leave-up { animation: leaveUp 0.5s cubic-bezier(0.22, 0.61, 0.36, 1) forwards; }
 
-/* editable title — green selection look with corner handles */
+/* editable title — sage selection look with corner handles */
 .title-edit {
   position: relative;
   display: inline-block;
-  outline: 1.5px solid #77ff94;
+  outline: 1.5px solid #6fae86;
   padding: 2px 12px;
 }
 
 .title-input {
   display: inline-block;
-  color: #77ff94;
+  color: #6fae86;
   outline: none;
-  caret-color: #77ff94;
+  caret-color: #6fae86;
   cursor: text;
   white-space: pre-wrap;
 }
@@ -314,8 +314,8 @@
   position: absolute;
   width: 9px;
   height: 9px;
-  background: #eafff0;
-  border: 1.5px solid #77ff94;
+  background: #eaf3ec;
+  border: 1.5px solid #6fae86;
   border-radius: 1px;
 }
 
