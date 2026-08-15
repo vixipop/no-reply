@@ -86,6 +86,35 @@ export function saveEntries(entries) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(entries))
 }
 
+// --- backup: export everything to a file, import it back ---
+export function exportData() {
+  return {
+    app: 'no-reply',
+    version: 1,
+    exportedAt: Date.now(),
+    entries: loadEntries(),
+  }
+}
+
+// Merge an imported backup into the current entries (non-destructive: existing
+// entries are kept, only ids that aren't here yet are added). Returns counts.
+export function importData(obj) {
+  const incoming = Array.isArray(obj) ? obj : obj?.entries
+  if (!Array.isArray(incoming)) throw new Error('not a no reply backup')
+  const byId = new Map(loadEntries().map((e) => [e.id, e]))
+  let added = 0
+  for (const raw of incoming) {
+    if (!raw || typeof raw !== 'object') continue
+    const e = normalize(raw)
+    if (!e.id || byId.has(e.id)) continue
+    byId.set(e.id, e)
+    added += 1
+  }
+  const merged = [...byId.values()].sort((a, b) => b.timestamp - a.timestamp)
+  saveEntries(merged)
+  return { added, total: merged.length }
+}
+
 function makeId() {
   if (typeof crypto !== 'undefined' && crypto.randomUUID) return crypto.randomUUID()
   return `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`

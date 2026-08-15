@@ -1,14 +1,17 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import {
   coverImage,
   deleteEntry,
   entryText,
+  exportData,
   formatDate,
+  importData,
   loadEntries,
   withinRange,
 } from '../lib/storage'
 import { BackIcon, CornerSparkle, DotStar, SearchIcon, TrashIcon } from '../components/icons'
+import { useToast } from '../components/Toast'
 
 const RANGES = [
   { id: 'all', label: 'all' },
@@ -58,9 +61,53 @@ function EntryCard({ entry, onDelete }) {
 
 export default function Archive() {
   const navigate = useNavigate()
+  const toast = useToast()
   const [entries, setEntries] = useState(loadEntries)
   const [range, setRange] = useState('all')
   const [query, setQuery] = useState('')
+  const fileRef = useRef(null)
+
+  // download every entry as a JSON backup file
+  const onExport = () => {
+    const blob = new Blob([JSON.stringify(exportData(), null, 2)], {
+      type: 'application/json',
+    })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `no-reply-backup-${new Date().toISOString().slice(0, 10)}.json`
+    document.body.appendChild(a)
+    a.click()
+    a.remove()
+    URL.revokeObjectURL(url)
+    toast(
+      entries.length
+        ? 'backup downloaded — keep it somewhere safe'
+        : 'nothing to back up yet',
+    )
+  }
+
+  // read a backup file and merge its entries in
+  const onImport = (e) => {
+    const file = e.target.files?.[0]
+    e.target.value = '' // let the same file be re-picked later
+    if (!file) return
+    const reader = new FileReader()
+    reader.onload = () => {
+      try {
+        const { added, total } = importData(JSON.parse(reader.result))
+        setEntries(loadEntries())
+        toast(
+          added === 0
+            ? 'already up to date — nothing new to import'
+            : `imported ${added} ${added === 1 ? 'entry' : 'entries'} · ${total} total`,
+        )
+      } catch {
+        toast("that file isn't a no reply backup")
+      }
+    }
+    reader.readAsText(file)
+  }
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase()
@@ -90,7 +137,26 @@ export default function Archive() {
           <BackIcon />
           <span>back</span>
         </button>
-        <span className="page-count">{entries.length} entries</span>
+        <div className="archive-actions">
+          <button className="text-button" onClick={onExport} title="download a backup file">
+            export
+          </button>
+          <button
+            className="text-button"
+            onClick={() => fileRef.current?.click()}
+            title="import a backup file"
+          >
+            import
+          </button>
+          <span className="page-count">{entries.length} entries</span>
+          <input
+            ref={fileRef}
+            type="file"
+            accept="application/json,.json"
+            hidden
+            onChange={onImport}
+          />
+        </div>
       </div>
 
       <div className="archive-wrap">

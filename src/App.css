@@ -240,9 +240,9 @@
   font-weight: 400;
   line-height: 1;
   color: #f7f4d5;
-  opacity: 0.62;
+  opacity: 0.6;
   white-space: nowrap;
-  filter: blur(1.6px);
+  filter: blur(2.5px);
   pointer-events: none;
 }
 
@@ -1550,4 +1550,11 @@
 .entry-mood .mood-face {
   width: 18px;
   height: 18px;
+}
+
+/* archive export / import actions (top-right) */
+.archive-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
 }
