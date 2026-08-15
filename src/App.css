@@ -293,19 +293,19 @@
 .prompt-layer.enter-up { animation: enterUp 0.5s cubic-bezier(0.22, 0.61, 0.36, 1); }
 .prompt-layer.leave-up { animation: leaveUp 0.5s cubic-bezier(0.22, 0.61, 0.36, 1) forwards; }
 
-/* editable title — blue selection look with corner handles */
+/* editable title — green selection look with corner handles */
 .title-edit {
   position: relative;
   display: inline-block;
-  outline: 1.5px solid #4c9ffe;
+  outline: 1.5px solid #77ff94;
   padding: 2px 12px;
 }
 
 .title-input {
   display: inline-block;
-  color: #4c9ffe;
+  color: #77ff94;
   outline: none;
-  caret-color: #4c9ffe;
+  caret-color: #77ff94;
   cursor: text;
   white-space: pre-wrap;
 }
@@ -314,8 +314,8 @@
   position: absolute;
   width: 9px;
   height: 9px;
-  background: #fff;
-  border: 1.5px solid #4c9ffe;
+  background: #eafff0;
+  border: 1.5px solid #77ff94;
   border-radius: 1px;
 }
 
@@ -536,11 +536,16 @@
   z-index: 1;
 }
 
+/* spacing lives on the wrapper so it stays constant whether the title is a
+   plain heading or the editable (inline-block) box — no gap collapse on edit */
+.journal-title-wrap {
+  margin-bottom: 20px;
+}
+
 .journal-title {
   font-size: 40px;
   line-height: 1.15;
   text-align: left;
-  margin-bottom: 20px;
   cursor: text;
 }
 

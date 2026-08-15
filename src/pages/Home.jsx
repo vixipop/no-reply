@@ -217,8 +217,17 @@ export default function Home() {
 
   const commitTitle = () => {
     const t = (editRef.current?.textContent || '').trim()
-    setCustomTitle(t || null)
+    // empty stays '' (deliberately title-less) instead of snapping back to the reel
+    setCustomTitle(t)
     setEditing(false)
+  }
+
+  // back to quick note: if the title is only blank because of the "+", bring the
+  // rotating prompt back. A title the user deliberately cleared ('') while already
+  // in quick mode is left alone.
+  const goQuick = () => {
+    if (mode !== 'quick' && customTitle === '') setCustomTitle(null)
+    setMode('quick')
   }
 
   const onTitleKeyDown = (e) => {
@@ -332,7 +341,7 @@ export default function Home() {
             <div className="mode-toggle">
               <button
                 className={mode === 'quick' ? 'active' : ''}
-                onClick={() => setMode('quick')}
+                onClick={goQuick}
               >
                 quick note
               </button>

@@ -4,6 +4,16 @@
   padding: 0;
 }
 
+/* green text selection everywhere (never the default blue) */
+::selection {
+  background: #77ff94;
+  color: #0a3323;
+}
+::-moz-selection {
+  background: #77ff94;
+  color: #0a3323;
+}
+
 html,
 body,
 #root {
