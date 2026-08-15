@@ -219,8 +219,8 @@
   margin-bottom: 18px;
   /* wide enough that the ghost line never clips on the left/right edges */
   width: 760px;
-  /* only the bottom ~half of the 48px glyphs shows through */
-  height: 34px;
+  /* only the bottom ~half of the 40px glyphs shows through */
+  height: 28px;
   overflow: hidden;
   /* bottom of the strip stays opaque, fading smoothly to transparent at the top */
   -webkit-mask-image: linear-gradient(to top, black 0%, black 26%, transparent 100%);
@@ -236,7 +236,7 @@
   bottom: 6px;
   transform: translateX(-50%);
   font-family: 'Young Serif', serif;
-  font-size: 48px;
+  font-size: 40px;
   font-weight: 400;
   line-height: 1;
   color: #f7f4d5;
@@ -248,7 +248,7 @@
 
 .prompt-text {
   font-family: 'Young Serif', serif;
-  font-size: 48px;
+  font-size: 40px;
   font-weight: 400;
   color: #f7f4d5;
   line-height: 1.2;
@@ -259,7 +259,7 @@
    continuous glide rather than a snap */
 .prompt-stage {
   position: relative;
-  min-height: 60px;
+  min-height: 52px;
 }
 
 .prompt-layer {
@@ -358,73 +358,6 @@
   display: flex;
   flex-direction: column;
   gap: 10px;
-}
-
-/* glowing grid-line crosses that mark the top corners of the writing zone —
-   a lit horizontal + vertical grid line, brightest where they cross. sits
-   behind the box so decorations elsewhere stay clear of this area. */
-/* wraps the whole writing zone (ghost + prompt + input) */
-.write-zone {
-  position: relative;
-  max-width: 660px;
-  margin: 0 auto;
-}
-
-/* a tiny, faint green sparkle — a glint of light sitting on the background
-   grid, above the ghost text and the prompt, at the top corners of the zone */
-.zone-glow {
-  position: absolute;
-  top: -96px;
-  width: 7px;
-  height: 7px;
-  z-index: 0;
-  pointer-events: none;
-  border-radius: 50%;
-  background: radial-gradient(
-    circle,
-    rgba(119, 255, 148, 0.26) 0%,
-    rgba(119, 255, 148, 0) 70%
-  );
-}
-.zone-glow.tl {
-  left: 0;
-  transform: translate(-50%, -50%);
-}
-.zone-glow.tr {
-  right: 0;
-  transform: translate(50%, -50%);
-}
-.zone-glow::before,
-.zone-glow::after {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  filter: blur(0.5px);
-}
-/* horizontal ray of the sparkle */
-.zone-glow::before {
-  width: 20px;
-  height: 1px;
-  transform: translate(-50%, -50%);
-  background: linear-gradient(
-    90deg,
-    rgba(119, 255, 148, 0) 0%,
-    rgba(119, 255, 148, 0.36) 50%,
-    rgba(119, 255, 148, 0) 100%
-  );
-}
-/* vertical ray of the sparkle */
-.zone-glow::after {
-  width: 1px;
-  height: 20px;
-  transform: translate(-50%, -50%);
-  background: linear-gradient(
-    180deg,
-    rgba(119, 255, 148, 0) 0%,
-    rgba(119, 255, 148, 0.36) 50%,
-    rgba(119, 255, 148, 0) 100%
-  );
 }
 
 .chatbox-row {
@@ -1497,10 +1430,10 @@
 .mood-face .mf-scribble {
   fill: none;
   stroke: var(--c);
-  stroke-width: 1.9;
+  stroke-width: 2.1;
   stroke-linecap: round;
   stroke-linejoin: round;
-  stroke-opacity: 0.82;
+  stroke-opacity: 0.85;
   stroke-dasharray: 100;
   stroke-dashoffset: 100;
 }

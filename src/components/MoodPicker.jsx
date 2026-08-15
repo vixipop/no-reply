@@ -91,7 +91,7 @@ export function MoodFace({ mood, color, filled = false, className = '' }) {
         className="mf-scribble"
         clipPath={`url(#${clipId})`}
         pathLength="100"
-        d="M3.5 16 L6.5 4.5 L9.5 18.5 L12.5 4.5 L15.5 18.5 L18.5 5.5 L21 14 L18 16.5 L15 6 L12 16.5 L9 6 L5.5 15.5"
+        d="M-2 10 L10 -2 L13 -2 L-2 15 L-2 18 L18 -2 L21 -2 L-2 23 L-2 26 L26 -2 L26 3 L3 26 L7 26 L26 7"
       />
       <circle className="mf-ring" cx="12" cy="12" r="9" />
       <g className="mf-feat">

@@ -396,10 +396,7 @@ export default function Home() {
 
         return (
           <div className="content-wrap">
-            <div className="write-zone">
-              <span className="zone-glow tl" aria-hidden="true" />
-              <span className="zone-glow tr" aria-hidden="true" />
-              <div className="prompt-wrap">
+            <div className="prompt-wrap">
               {showGhost && (
                 <div className="prompt-ghost-wrap">
                   <div className="prompt-ghost">{ghostText}</div>
@@ -456,7 +453,6 @@ export default function Home() {
                 <SparkleMini />
                 <span className="archive-label">{weekTotal} entries this week</span>
               </div>
-            </div>
             </div>
           </div>
         )
