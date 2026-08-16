@@ -135,10 +135,13 @@ function buildPiano(ctx, dest) {
 
 const BUILDERS = { rain: buildRain, pink: buildPink, storm: buildStorm, piano: buildPiano }
 
+// scales the whole player down so ambient stays in the background
+const MASTER_VOLUME = 0.5
+
 export default function MusicPlayer() {
   const [playing, setPlaying] = useState(false)
   const [trackId, setTrackId] = useState('rain')
-  const [volume, setVolume] = useState(0.5)
+  const [volume, setVolume] = useState(0.35)
 
   const ctxRef = useRef(null)
   const gainRef = useRef(null)
@@ -149,7 +152,7 @@ export default function MusicPlayer() {
     const Ctx = window.AudioContext || window.webkitAudioContext
     const ctx = new Ctx()
     const gain = ctx.createGain()
-    gain.gain.value = volume
+    gain.gain.value = volume * MASTER_VOLUME
     gain.connect(ctx.destination)
     ctxRef.current = ctx
     gainRef.current = gain
@@ -179,7 +182,7 @@ export default function MusicPlayer() {
   }
 
   useEffect(() => {
-    if (gainRef.current) gainRef.current.gain.value = volume
+    if (gainRef.current) gainRef.current.gain.value = volume * MASTER_VOLUME
   }, [volume])
 
   return (

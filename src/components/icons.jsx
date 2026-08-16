@@ -24,23 +24,24 @@ export function ArchiveIcon() {
   )
 }
 
-// hand mirror — oval glass + handle
+// standing / vanity mirror — rounded glass on a stand, with a shine
 export function MirrorIcon() {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <ellipse cx="12" cy="8.5" rx="6" ry="6.5" />
-      <path d="M12 15v5.5" />
-      <path d="M9.5 21h5" />
+      <rect x="5" y="2.5" width="14" height="15" rx="7" />
+      <path d="M8.6 6.4c-1 1-1.6 2.3-1.7 3.8" opacity="0.5" />
+      <path d="M12 17.5v3" />
+      <path d="M8.5 20.5h7" />
     </svg>
   )
 }
 
-// settings cog — toothed gear ring + centre
+// settings cog — toothed gear ring + centre (fills the box for even sizing)
 export function CogIcon() {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="M18.2 12 L16.25 13.76 L16.38 16.38 L13.76 16.25 L12 18.2 L10.24 16.25 L7.62 16.38 L7.75 13.76 L5.8 12 L7.75 10.24 L7.62 7.62 L10.24 7.75 L12 5.8 L13.76 7.75 L16.38 7.62 L16.25 10.24 Z" />
-      <circle cx="12" cy="12" r="2.3" />
+      <path d="M20 12 L17.54 14.3 L17.66 17.66 L14.3 17.54 L12 20 L9.7 17.54 L6.34 17.66 L6.46 14.3 L4 12 L6.46 9.7 L6.34 6.34 L9.7 6.46 L12 4 L14.3 6.46 L17.66 6.34 L17.54 9.7 Z" />
+      <circle cx="12" cy="12" r="2.7" />
     </svg>
   )
 }

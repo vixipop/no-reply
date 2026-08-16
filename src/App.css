@@ -1590,11 +1590,11 @@
 /* floating "new entry" button (bottom-right, all pages) */
 .fab {
   position: fixed;
-  right: 28px;
-  bottom: 28px;
+  right: 24px;
+  bottom: 24px;
   z-index: 110;
-  width: 56px;
-  height: 56px;
+  width: 42px;
+  height: 42px;
   border-radius: 50%;
   border: none;
   cursor: pointer;
@@ -1603,11 +1603,15 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.35);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.32);
   transition: transform 0.18s ease, background 0.18s ease;
 }
+.fab svg {
+  width: 19px;
+  height: 19px;
+}
 .fab:hover {
-  transform: translateY(-2px) scale(1.04);
+  transform: translateY(-2px) scale(1.05);
   background: #ffb9ec;
 }
 
