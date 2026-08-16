@@ -28,10 +28,10 @@ export function ArchiveIcon() {
 export function MirrorIcon() {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <rect x="5" y="2.5" width="14" height="15" rx="7" />
-      <path d="M8.6 6.4c-1 1-1.6 2.3-1.7 3.8" opacity="0.5" />
-      <path d="M12 17.5v3" />
-      <path d="M8.5 20.5h7" />
+      <rect x="4" y="1.8" width="16" height="16" rx="8" />
+      <path d="M8 5.8c-1.1 1.1-1.8 2.6-1.9 4.3" opacity="0.5" />
+      <path d="M12 17.8v3.4" />
+      <path d="M7.5 21.2h9" />
     </svg>
   )
 }
