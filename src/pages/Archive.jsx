@@ -9,6 +9,7 @@ import {
   withinRange,
 } from '../lib/storage'
 import { BackIcon, CornerSparkle, DotStar, SearchIcon, TrashIcon } from '../components/icons'
+import TopNav from '../components/TopNav'
 
 const RANGES = [
   { id: 'all', label: 'all' },
@@ -90,13 +91,12 @@ export default function Archive() {
           <BackIcon />
           <span>back</span>
         </button>
+        <TopNav />
         <span className="page-count">{entries.length} entries</span>
       </div>
 
       <div className="archive-wrap">
-        <h1 className="archive-title">
-          the <span className="highlight-word">archive</span>
-        </h1>
+        <h1 className="archive-title">archive</h1>
 
         <div className="archive-toolbar">
           <label className="search-field">

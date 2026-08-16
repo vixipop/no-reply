@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { BackIcon, CornerSparkle } from '../components/icons'
 import { exportData, importData, loadEntries } from '../lib/storage'
 import { useToast } from '../components/Toast'
+import TopNav from '../components/TopNav'
 
 export default function Settings() {
   const navigate = useNavigate()
@@ -56,6 +57,7 @@ export default function Settings() {
           <BackIcon />
           <span>back</span>
         </button>
+        <TopNav />
       </div>
 
       <div className="page-wrap">

@@ -5,6 +5,7 @@ import { BackIcon, CornerSparkle, TrashIcon } from '../components/icons'
 import { useConfirm } from '../components/Confirm'
 import { BlockEditor, BlockView } from '../components/BlockEditor'
 import MoodPicker, { MoodFace, moodMeta } from '../components/MoodPicker'
+import TopNav from '../components/TopNav'
 
 export default function Entry() {
   const { id } = useParams()
@@ -94,6 +95,7 @@ export default function Entry() {
           <BackIcon />
           <span>archive</span>
         </button>
+        <TopNav />
       </div>
 
       <article className="entry-page">

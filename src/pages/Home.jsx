@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
-import { Link, useNavigate, useSearchParams } from 'react-router-dom'
+import { useSearchParams } from 'react-router-dom'
 import star1 from '../assets/star1.png'
 import star2 from '../assets/star2.png'
 import {
@@ -14,19 +14,11 @@ import {
   textToBlocks,
   weekCount,
 } from '../lib/storage'
-import {
-  ArchiveIcon,
-  CogIcon,
-  CornerSparkle,
-  FireIcon,
-  MicIcon,
-  MirrorIcon,
-  SendStar,
-  SparkleMini,
-} from '../components/icons'
+import { CornerSparkle, FireIcon, MicIcon, SendStar, SparkleMini } from '../components/icons'
 import { useToast } from '../components/Toast'
 import { BlockEditor } from '../components/BlockEditor'
 import MoodPicker from '../components/MoodPicker'
+import TopNav from '../components/TopNav'
 
 const emptyBlocks = () => [{ id: newId(), type: 'text', text: '' }]
 
@@ -66,7 +58,6 @@ function renderPrompt(text, glow) {
 }
 
 export default function Home() {
-  const navigate = useNavigate()
   const toast = useToast()
   const [searchParams, setSearchParams] = useSearchParams()
   const [entries, setEntries] = useState(loadEntries)
@@ -318,20 +309,7 @@ export default function Home() {
           <FireIcon color={didToday ? '#FFABE7' : '#7E8B84'} />
           <span className="day-label">{dayStreak} day streak</span>
         </div>
-        <nav className="top-nav">
-          <Link to="/archive">
-            <ArchiveIcon />
-            archive
-          </Link>
-          <Link to="/mirror">
-            <MirrorIcon />
-            mirror
-          </Link>
-          <Link to="/settings">
-            <CogIcon />
-            settings
-          </Link>
-        </nav>
+        <TopNav />
       </div>
 
       {/* the mode toggle (bottom-left) + room on the right for future tools */}
