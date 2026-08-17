@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { deleteEntry, formatDate, getEntry, updateEntry } from '../lib/storage'
 import { BackIcon, CornerSparkle, TrashIcon } from '../components/icons'
 import { useConfirm } from '../components/Confirm'
@@ -19,6 +19,13 @@ export default function Entry() {
   const [blocks, setBlocks] = useState(initial?.blocks || [])
   const [coverId, setCoverId] = useState(initial?.coverId || null)
   const [mood, setMood] = useState(initial?.mood || null)
+  const [searchParams] = useSearchParams()
+
+  // open straight into edit mode when arrived via the archive "edit" action
+  useEffect(() => {
+    if (searchParams.get('edit') === '1' && initial) setEditing(true)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   // are there unsaved edits?
   const dirty =

@@ -182,6 +182,24 @@ export function PinIcon() {
   )
 }
 
+export function ReplyIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M9.5 8 L5 12 L9.5 16" />
+      <path d="M5 12 H14 a4.5 4.5 0 0 1 4.5 4.5 V17.5" />
+    </svg>
+  )
+}
+
+export function EditIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M5 19h4L18.5 9.5a2 2 0 0 0-3-3L5 17z" />
+      <path d="M14 7l3 3" />
+    </svg>
+  )
+}
+
 export function SearchIcon() {
   return (
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
