@@ -19,6 +19,7 @@ import { useToast } from '../components/Toast'
 import { BlockEditor } from '../components/BlockEditor'
 import MoodPicker from '../components/MoodPicker'
 import TopNav from '../components/TopNav'
+import { fileToDataURL } from '../lib/image'
 
 const emptyBlocks = () => [{ id: newId(), type: 'text', text: '' }]
 
@@ -283,9 +284,9 @@ export default function Home() {
   }
 
   const readImageFile = (file) => {
-    const reader = new FileReader()
-    reader.onload = () => setImage(reader.result)
-    reader.readAsDataURL(file)
+    fileToDataURL(file).then((src) => {
+      if (src) setImage(src)
+    })
   }
 
   const onPaste = (e) => {

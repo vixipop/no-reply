@@ -3,6 +3,7 @@ import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { deleteEntry, formatDate, getEntry, updateEntry } from '../lib/storage'
 import { BackIcon, CornerSparkle, TrashIcon } from '../components/icons'
 import { useConfirm } from '../components/Confirm'
+import { useToast } from '../components/Toast'
 import { BlockEditor, BlockView } from '../components/BlockEditor'
 import MoodPicker, { MoodFace, moodMeta } from '../components/MoodPicker'
 import TopNav from '../components/TopNav'
@@ -11,6 +12,7 @@ export default function Entry() {
   const { id } = useParams()
   const navigate = useNavigate()
   const confirm = useConfirm()
+  const toast = useToast()
   const initial = useMemo(() => getEntry(id), [id])
 
   const [entry, setEntry] = useState(initial)
@@ -39,7 +41,13 @@ export default function Entry() {
   // autosave (debounced) — no manual save, no unsaved-changes guard
   const flushSave = () => {
     if (!entry) return
-    setEntry(updateEntry(entry.id, { prompt, blocks, coverId, mood }))
+    try {
+      setEntry(updateEntry(entry.id, { prompt, blocks, coverId, mood }))
+    } catch {
+      // storage full (usually a too-large image) — stop the hanging "saving…" and warn
+      setEntry({ ...entry, prompt, blocks, coverId, mood })
+      toast("couldn't save — storage is full. try a smaller image?")
+    }
   }
   useEffect(() => {
     if (!dirty) return

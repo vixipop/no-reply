@@ -1,17 +1,10 @@
 import { useEffect, useLayoutEffect, useRef } from 'react'
 import { newId } from '../lib/storage'
+import { fileToDataURL } from '../lib/image'
 import { AlignIcon, PinIcon, WrapIcon } from './icons'
 
 const ALIGN_ORDER = ['center', 'left', 'right']
 const WRAP_DEFAULT_WIDTH = 320 // px an image snaps to when text starts flowing beside it
-
-function readAsDataURL(file) {
-  return new Promise((resolve) => {
-    const r = new FileReader()
-    r.onload = () => resolve(r.result)
-    r.readAsDataURL(file)
-  })
-}
 
 // always keep a plain text block at the very end so you can keep writing under
 // an image — including when the last text was pulled *beside* a wrapped image
@@ -45,7 +38,7 @@ function groupBlocks(blocks) {
 // which side the image sits on when text flows beside it
 const wrapSide = (align) => (align === 'right' ? 'right' : 'left')
 
-function TextBlock({ block, placeholder, onChange, onPasteImage }) {
+function TextBlock({ block, placeholder, onChange, onPasteImage, onKeyDown, registerRef }) {
   const ref = useRef(null)
   useLayoutEffect(() => {
     const el = ref.current
@@ -55,13 +48,17 @@ function TextBlock({ block, placeholder, onChange, onPasteImage }) {
   }, [block.text])
   return (
     <textarea
-      ref={ref}
+      ref={(el) => {
+        ref.current = el
+        registerRef(block.id, el)
+      }}
       className="block-text"
       rows={1}
       placeholder={placeholder}
       value={block.text}
       onChange={(e) => onChange(block.id, e.target.value)}
       onPaste={(e) => onPasteImage(e, block.id)}
+      onKeyDown={(e) => onKeyDown(e, block)}
     />
   )
 }
@@ -132,6 +129,25 @@ function ImageBlock({ block, isCover, onSetCover, onRemove, onResize, onCycleAli
 export function BlockEditor({ blocks, coverId, onChange, onSetCover }) {
   const set = (nb) => onChange(withTrailingText(nb))
 
+  // keep a live map of each text block's textarea, so a merge can restore the caret
+  const refs = useRef({})
+  const pendingFocus = useRef(null)
+  const registerRef = (id, el) => {
+    if (el) refs.current[id] = el
+    else delete refs.current[id]
+  }
+  useLayoutEffect(() => {
+    const pf = pendingFocus.current
+    if (!pf) return
+    pendingFocus.current = null
+    const el = refs.current[pf.id]
+    if (el) {
+      el.focus()
+      const o = Math.min(pf.offset, el.value.length)
+      el.setSelectionRange(o, o)
+    }
+  })
+
   // entries that were saved ending in an image (e.g. a quick note + photo) have
   // no trailing text block, so there's nowhere to type after the image. Enforce
   // the invariant on mount / whenever blocks change.
@@ -170,6 +186,40 @@ export function BlockEditor({ blocks, coverId, onChange, onSetCover }) {
 
   const removeBlock = (id) => set(blocks.filter((b) => b.id !== id))
 
+  // Backspace at the very start of a text block joins it upward: merge into the
+  // previous text block, or delete a preceding image and rejoin the text around
+  // it. Fixes fragmented text boxes and stuck empty lines/gaps.
+  const mergeBack = (e, block) => {
+    if (e.key !== 'Backspace') return
+    const el = e.target
+    if (el.selectionStart !== 0 || el.selectionEnd !== 0) return
+    const idx = blocks.findIndex((b) => b.id === block.id)
+    if (idx <= 0) return
+    const prev = blocks[idx - 1]
+    e.preventDefault()
+    if (prev.type === 'text') {
+      pendingFocus.current = { id: prev.id, offset: prev.text.length }
+      set(
+        blocks
+          .map((b) => (b.id === prev.id ? { ...b, text: prev.text + block.text } : b))
+          .filter((b) => b.id !== block.id),
+      )
+    } else {
+      // prev is an image → remove it and rejoin the text on either side
+      const before = blocks[idx - 2]
+      let nb = blocks.filter((b) => b.id !== prev.id)
+      if (before && before.type === 'text') {
+        pendingFocus.current = { id: before.id, offset: before.text.length }
+        nb = nb
+          .map((b) => (b.id === before.id ? { ...b, text: before.text + block.text } : b))
+          .filter((b) => b.id !== block.id)
+      } else {
+        pendingFocus.current = { id: block.id, offset: 0 }
+      }
+      set(nb)
+    }
+  }
+
   // paste an image → split the focused text block at the caret and drop it in
   const pasteImage = (e, blockId) => {
     const item = [...e.clipboardData.items].find((i) => i.type.startsWith('image/'))
@@ -178,7 +228,8 @@ export function BlockEditor({ blocks, coverId, onChange, onSetCover }) {
     const file = item.getAsFile()
     const pos = e.target.selectionStart
     const idx = blocks.findIndex((b) => b.id === blockId)
-    readAsDataURL(file).then((src) => {
+    fileToDataURL(file).then((src) => {
+      if (!src) return
       const b = blocks[idx]
       const before = b.text.slice(0, pos)
       const after = b.text.slice(pos)
@@ -201,7 +252,7 @@ export function BlockEditor({ blocks, coverId, onChange, onSetCover }) {
     )
     if (!files.length) return
     e.preventDefault()
-    const srcs = await Promise.all(files.map(readAsDataURL))
+    const srcs = (await Promise.all(files.map((f) => fileToDataURL(f)))).filter(Boolean)
     set([...blocks, ...srcs.map((src) => ({ id: newId(), type: 'image', src, width: null }))])
   }
 
@@ -229,6 +280,8 @@ export function BlockEditor({ blocks, coverId, onChange, onSetCover }) {
       }
       onChange={updateText}
       onPasteImage={pasteImage}
+      onKeyDown={mergeBack}
+      registerRef={registerRef}
     />
   )
 

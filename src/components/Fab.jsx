@@ -1,10 +1,12 @@
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { PlusIcon } from './icons'
 
-// always-present "new entry" button (bottom-right). Opens a fresh journal page
-// with a blank title, from anywhere in the app.
+// "new entry" button (bottom-right) on every page EXCEPT home — home is already
+// the composer (quick note / journal), so a "+" there is redundant.
 export default function Fab() {
   const navigate = useNavigate()
+  const { pathname } = useLocation()
+  if (pathname === '/') return null
   return (
     <button
       className="fab"
