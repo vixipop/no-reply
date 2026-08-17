@@ -1,6 +1,7 @@
 // Local-only persistence for journal entries.
-// Modern entry: { id, prompt, blocks: Block[], coverId, timestamp }
+// Modern entry: { id, prompt, blocks: Block[], coverId, mood, replies, timestamp }
 //   Block = { id, type:'text', text } | { id, type:'image', src, width }
+//   Reply = { id, text, timestamp }  — a note you add to the entry later
 // Older entries ({ text, images[], cover }) are migrated to blocks on load.
 
 const STORAGE_KEY = 'no-reply-entries'
@@ -23,7 +24,8 @@ export async function requestPersistentStorage() {
 
 // migrate any older entry shape into { blocks, coverId }
 function normalize(entry) {
-  if (Array.isArray(entry.blocks)) return { mood: null, ...entry }
+  if (Array.isArray(entry.blocks))
+    return { mood: null, replies: [], ...entry, replies: entry.replies ?? [] }
   const blocks = [{ id: makeId(), type: 'text', text: entry.text || '' }]
   const imgs = Array.isArray(entry.images) ? entry.images : entry.image ? [entry.image] : []
   let coverId = null
@@ -39,6 +41,7 @@ function normalize(entry) {
     blocks,
     coverId,
     mood: entry.mood ?? null,
+    replies: entry.replies ?? [],
   }
 }
 
@@ -128,10 +131,32 @@ export function addEntry({ prompt, blocks, coverId = null, mood = null }) {
     blocks,
     coverId,
     mood,
+    replies: [],
     timestamp: Date.now(),
   }
   saveEntries([entry, ...entries])
   return entry
+}
+
+// A reply is a note you add to an entry later — the only reply is from
+// yourself. Replies can be added and deleted, but never edited.
+export function addReply(id, text) {
+  const clean = (text || '').trim()
+  if (!clean) return getEntry(id)
+  const reply = { id: makeId(), text: clean, timestamp: Date.now() }
+  const entries = loadEntries().map((e) =>
+    e.id === id ? { ...e, replies: [...(e.replies || []), reply] } : e,
+  )
+  saveEntries(entries)
+  return entries.find((e) => e.id === id) || null
+}
+
+export function deleteReply(id, replyId) {
+  const entries = loadEntries().map((e) =>
+    e.id === id ? { ...e, replies: (e.replies || []).filter((r) => r.id !== replyId) } : e,
+  )
+  saveEntries(entries)
+  return entries.find((e) => e.id === id) || null
 }
 
 export function updateEntry(id, patch) {
