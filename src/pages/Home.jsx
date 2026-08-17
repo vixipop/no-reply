@@ -19,7 +19,7 @@ import { useToast } from '../components/Toast'
 import { BlockEditor } from '../components/BlockEditor'
 import MoodPicker from '../components/MoodPicker'
 import TopNav from '../components/TopNav'
-import { fileToDataURL } from '../lib/image'
+import { fileToDataURL, shrinkBlocks } from '../lib/image'
 
 const emptyBlocks = () => [{ id: newId(), type: 'text', text: '' }]
 
@@ -251,7 +251,7 @@ export default function Home() {
     setMode('journal')
   }
 
-  const save = () => {
+  const save = async () => {
     let payload
     if (mode === 'journal') {
       const hasText = blocks.some((b) => b.type === 'text' && b.text.trim())
@@ -264,7 +264,19 @@ export default function Home() {
       const built = textToBlocks(value, image)
       payload = { prompt: promptText, blocks: built.blocks, coverId: built.coverId, mood }
     }
-    addEntry(payload)
+    // recompress any oversized images so the entry fits in storage
+    payload = { ...payload, blocks: await shrinkBlocks(payload.blocks) }
+    // free the draft's copy of any images first, so we don't briefly hold two
+    // copies in storage (that doubling is what tips large images over the quota)
+    clearDraft()
+    try {
+      addEntry(payload)
+    } catch {
+      // genuinely out of space — re-save the draft so nothing is lost, and warn
+      saveDraft({ text: value, customTitle, image, mode, blocks, coverId, mood })
+      toast("couldn't seal — storage is full. try removing an image.")
+      return
+    }
     setEntries(loadEntries())
     setValue('')
     setImage(null)
@@ -272,7 +284,6 @@ export default function Home() {
     setCoverId(null)
     setCustomTitle(null)
     setMood(null)
-    clearDraft()
     toast(SAVE_LINES[Math.floor(Math.random() * SAVE_LINES.length)])
   }
 
