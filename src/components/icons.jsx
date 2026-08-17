@@ -84,6 +84,70 @@ export function SparkleMini({ size = 14, color = '#FFABE7' }) {
   )
 }
 
+// deterministic tiny PRNG + string hash, so a given seed always draws the same star
+function mulberry32(seed) {
+  return function () {
+    seed |= 0
+    seed = (seed + 0x6d2b79f5) | 0
+    let t = Math.imul(seed ^ (seed >>> 15), 1 | seed)
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296
+  }
+}
+
+function hashSeed(str) {
+  let h = 2166136261
+  for (let i = 0; i < str.length; i += 1) {
+    h ^= str.charCodeAt(i)
+    h = Math.imul(h, 16777619)
+  }
+  return h >>> 0
+}
+
+// A six-pointed sparkle-star with needle spikes of varied length and a random
+// rotation, seeded by `seed` so every entry keeps its own star across renders.
+// Each spike's length is random, but the longest always reaches the same radius,
+// so the overall size stays constant from thumbnail to thumbnail.
+export function SparkleStar({ seed = 'x', size = 22, color = 'currentColor' }) {
+  const rnd = mulberry32(hashSeed(String(seed)))
+  const cx = 50
+  const cy = 50
+  const outer = 47 // full reach of the longest spike
+  const inner = 8 // waist radius — smaller = thinner, sharper spikes
+  const rot = rnd() * Math.PI * 2
+
+  // per-spike length factors in [0.5, 1]; normalize so the max is exactly 1
+  const lens = Array.from({ length: 6 }, () => 0.5 + rnd() * 0.5)
+  const maxLen = Math.max(...lens)
+  const radii = lens.map((l) => (l / maxLen) * outer)
+
+  const ang = (i) => rot + (i * Math.PI) / 3
+  const pt = (a, r) => [cx + Math.cos(a) * r, cy + Math.sin(a) * r]
+  const f = (n) => n.toFixed(2)
+
+  let d = ''
+  for (let i = 0; i < 6; i += 1) {
+    const next = (i + 1) % 6
+    const [nx, ny] = pt(ang(next), radii[next])
+    // control points sit near the center along each spike's own direction, so
+    // the edge dips inward between spikes → concave, needle-sharp points
+    const [c1x, c1y] = pt(ang(i), inner)
+    const [c2x, c2y] = pt(ang(next), inner)
+    if (i === 0) {
+      const [tx, ty] = pt(ang(0), radii[0])
+      d += `M${f(tx)} ${f(ty)} `
+    }
+    d += `C${f(c1x)} ${f(c1y)} ${f(c2x)} ${f(c2y)} ${f(nx)} ${f(ny)} `
+  }
+  d += 'Z'
+
+  return (
+    <svg width={size} height={size} viewBox="0 0 100 100" fill={color} aria-hidden="true">
+      <path d={d} />
+    </svg>
+  )
+}
+
 // six-point asterisk, perfectly centred in its box so hover-rotation spins in place
 export function CornerSparkle() {
   return (

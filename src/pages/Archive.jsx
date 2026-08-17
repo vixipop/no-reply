@@ -15,7 +15,7 @@ import {
   EditIcon,
   ReplyIcon,
   SearchIcon,
-  SparkleMini,
+  SparkleStar,
   TrashIcon,
 } from '../components/icons'
 import { MoodFace, moodMeta } from '../components/MoodPicker'
@@ -61,7 +61,7 @@ function EntryRow({ entry, onReply, onEdit, onDelete }) {
           </span>
         ) : (
           <span className="arch-lead-empty">
-            <SparkleMini size={20} color="rgba(247,244,213,0.3)" />
+            <SparkleStar seed={entry.id} size={30} color="rgba(247,244,213,0.42)" />
           </span>
         )}
       </div>
