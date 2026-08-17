@@ -222,17 +222,18 @@ export default function Entry() {
                 <div className="reply-list">
                   {entry.replies.map((r) => (
                     <div className="reply" key={r.id}>
-                      <div className="reply-meta">
-                        <span className="reply-date">replied {formatDate(r.timestamp)}</span>
+                      <span className="reply-date">replied {formatDate(r.timestamp)}</span>
+                      <div className="reply-row">
+                        <p className="reply-text">{r.text}</p>
                         <button
                           className="reply-del"
                           onClick={() => removeReply(r.id)}
                           aria-label="delete reply"
+                          title="delete reply"
                         >
-                          delete
+                          <TrashIcon />
                         </button>
                       </div>
-                      <p className="reply-text">{r.text}</p>
                     </div>
                   ))}
                 </div>

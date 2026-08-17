@@ -1134,7 +1134,8 @@
   z-index: 1;
   max-width: 680px;
   margin: 40px auto 100px;
-  padding: 0 24px;
+  /* generous room to scroll past the reply box */
+  padding: 0 24px 75vh;
 }
 
 .entry-hero {
@@ -1478,32 +1479,51 @@
   margin-bottom: 0;
 }
 
-.reply-meta {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 6px;
-}
-
 .reply-date {
+  display: block;
   font-family: 'Space Grotesk', sans-serif;
   font-size: 11px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: rgba(247, 244, 213, 0.45);
+  margin-bottom: 6px;
+}
+
+/* text on the left (with its rule), the delete icon parked on the right */
+.reply-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.reply-text {
+  flex: 1;
+  min-width: 0;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 16px;
+  line-height: 1.7;
+  color: #f7f4d5;
+  white-space: pre-wrap;
+  word-break: break-word;
+  border-left: 2px solid rgba(107, 140, 118, 0.4);
+  padding-left: 14px;
 }
 
 .reply-del {
+  flex-shrink: 0;
   opacity: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
   background: none;
   border: none;
+  border-radius: 8px;
   padding: 0;
   cursor: pointer;
-  font-family: 'Space Grotesk', sans-serif;
-  font-size: 11px;
-  letter-spacing: 0.04em;
-  color: rgba(247, 244, 213, 0.4);
-  transition: opacity 0.15s, color 0.15s;
+  color: rgba(247, 244, 213, 0.45);
+  transition: opacity 0.15s, color 0.15s, background 0.15s;
 }
 
 .reply:hover .reply-del,
@@ -1513,17 +1533,7 @@
 
 .reply-del:hover {
   color: #ff9a9a;
-}
-
-.reply-text {
-  font-family: 'Space Grotesk', sans-serif;
-  font-size: 16px;
-  line-height: 1.7;
-  color: #f7f4d5;
-  white-space: pre-wrap;
-  word-break: break-word;
-  border-left: 2px solid rgba(107, 140, 118, 0.4);
-  padding-left: 14px;
+  background: rgba(255, 154, 154, 0.1);
 }
 
 .reply-composer {
