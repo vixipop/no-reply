@@ -13,18 +13,14 @@ function rng(seed) {
   }
 }
 
-const SNAP = 24 // px within home before a piece clicks into place
+const SNAP = 26 // px of slack before pieces click together / into the frame
 
 function Piece({ p, image, aW, aH, index, register, onDown }) {
   const { w, h } = p.bbox
   const cid = `pzc-${p.id}`
   const fid = `pzf-${p.id}`
   return (
-    <div
-      className="pz-piece"
-      ref={(el) => register(p.id, el)}
-      onPointerDown={(e) => onDown(e, p)}
-    >
+    <div className="pz-piece" ref={(el) => register(p.id, el)} onPointerDown={(e) => onDown(e, p)}>
       <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} className="pz-svg">
         <defs>
           <clipPath id={cid}>
@@ -56,7 +52,6 @@ function Piece({ p, image, aW, aH, index, register, onDown }) {
             height={aH}
             preserveAspectRatio="none"
           />
-          {/* matte cardboard grain over the print */}
           <rect
             x="0"
             y="0"
@@ -80,20 +75,22 @@ export default function Puzzle({ cols = 6, rows = 8, seed = 42, image = shipUrl,
   const els = useRef({})
   const drag = useRef(null)
   const zTop = useRef(20)
-  const posRef = useRef({}) // id -> {x,y,placed}
+  const pos = useRef({}) // id -> {x,y} (bbox top-left, board coords)
+  const groupOf = useRef(new Map()) // id -> gid
+  const groupMembers = useRef(new Map()) // gid -> [id]
+  const anchored = useRef(new Set()) // gids locked into the frame
+  const gidSeq = useRef(0)
   const [board, setBoard] = useState(null)
   const [img, setImg] = useState(null)
   const [placed, setPlaced] = useState(0)
-  const [ready, setReady] = useState(false)
+  const [total, setTotal] = useState(0)
 
-  // natural image size
   useEffect(() => {
     const im = new Image()
     im.onload = () => setImg({ w: im.naturalWidth, h: im.naturalHeight })
     im.src = image
   }, [image])
 
-  // measure the board
   useEffect(() => {
     const measure = () => {
       if (boardRef.current) setBoard({ w: boardRef.current.clientWidth, h: boardRef.current.clientHeight })
@@ -103,14 +100,11 @@ export default function Puzzle({ cols = 6, rows = 8, seed = 42, image = shipUrl,
     return () => window.removeEventListener('resize', measure)
   }, [])
 
-  // assembled area + geometry
   const layout = useMemo(() => {
     if (!board || !img) return null
-    const availW = board.w
-    const availH = board.h
-    let aH = Math.min(availH * 0.74, 540)
+    let aH = Math.min(board.h * 0.74, 540)
     let aW = aH * (img.w / img.h)
-    const maxW = availW * 0.6
+    const maxW = board.w * 0.6
     if (aW > maxW) {
       aW = maxW
       aH = aW * (img.h / img.w)
@@ -126,71 +120,183 @@ export default function Puzzle({ cols = 6, rows = 8, seed = 42, image = shipUrl,
     else delete els.current[id]
   }
 
-  const place = (el, x, y) => {
-    el.style.left = `${x}px`
-    el.style.top = `${y}px`
+  const paint = (id) => {
+    const el = els.current[id]
+    const q = pos.current[id]
+    if (el && q) {
+      el.style.left = `${q.x}px`
+      el.style.top = `${q.y}px`
+    }
   }
 
-  // scatter pieces once we have a layout, and paint their start positions
+  // scatter pieces once we have a layout; every piece starts in its own group
   useEffect(() => {
     if (!layout) return
-    setReady(false)
     const { pz } = layout
     const r = rng(seed * 7 + 3)
-    const next = {}
+    pos.current = {}
+    groupOf.current = new Map()
+    groupMembers.current = new Map()
+    anchored.current = new Set()
+    gidSeq.current = 0
     pz.pieces.forEach((p) => {
-      const x = 6 + r() * Math.max(1, board.w - p.bbox.w - 12)
-      const y = 6 + r() * Math.max(1, board.h - p.bbox.h - 12)
-      next[p.id] = { x, y, placed: false }
+      pos.current[p.id] = {
+        x: 6 + r() * Math.max(1, board.w - p.bbox.w - 12),
+        y: 6 + r() * Math.max(1, board.h - p.bbox.h - 12),
+      }
+      const gid = gidSeq.current++
+      groupOf.current.set(p.id, gid)
+      groupMembers.current.set(gid, [p.id])
     })
-    posRef.current = next
+    setTotal(pz.pieces.length)
     setPlaced(0)
-    // paint after the DOM nodes exist
     requestAnimationFrame(() => {
       pz.pieces.forEach((p) => {
+        paint(p.id)
         const el = els.current[p.id]
         if (el) {
-          place(el, next[p.id].x, next[p.id].y)
           el.classList.remove('placed')
           el.style.zIndex = 20
         }
       })
-      setReady(true)
     })
   }, [layout, board, seed])
 
-  // one set of window listeners for the whole drag lifecycle
+  // all the snap logic lives in one place, closing over the current layout
   useEffect(() => {
+    if (!layout) return
+    const byId = {}
+    layout.pz.pieces.forEach((p) => {
+      byId[p.id] = p
+    })
+    const neighbors = (id) => {
+      const p = byId[id]
+      return [`${p.row - 1}-${p.col}`, `${p.row + 1}-${p.col}`, `${p.row}-${p.col - 1}`, `${p.row}-${p.col + 1}`].filter(
+        (n) => byId[n],
+      )
+    }
+    const shift = (gid, dx, dy) => {
+      groupMembers.current.get(gid).forEach((id) => {
+        pos.current[id].x += dx
+        pos.current[id].y += dy
+        paint(id)
+      })
+    }
+    const union = (a, b) => {
+      if (a === b) return a
+      const ma = groupMembers.current.get(a)
+      const mb = groupMembers.current.get(b)
+      const [keep, drop] = ma.length >= mb.length ? [a, b] : [b, a]
+      groupMembers.current.get(drop).forEach((id) => {
+        groupOf.current.set(id, keep)
+        groupMembers.current.get(keep).push(id)
+      })
+      if (anchored.current.has(drop)) anchored.current.add(keep)
+      anchored.current.delete(drop)
+      groupMembers.current.delete(drop)
+      return keep
+    }
+    // merge any adjacent pieces from different groups that are already aligned
+    const mergeExact = () => {
+      let changed = true
+      while (changed) {
+        changed = false
+        for (const id of Object.keys(pos.current)) {
+          const g = groupOf.current.get(id)
+          for (const n of neighbors(id)) {
+            if (groupOf.current.get(n) === g) continue
+            const hx = byId[id].home.x - byId[n].home.x
+            const hy = byId[id].home.y - byId[n].home.y
+            if (
+              Math.abs(pos.current[n].x + hx - pos.current[id].x) < 2 &&
+              Math.abs(pos.current[n].y + hy - pos.current[id].y) < 2
+            ) {
+              union(g, groupOf.current.get(n))
+              changed = true
+            }
+          }
+        }
+      }
+    }
+    const lock = (gid) => {
+      groupMembers.current.get(gid).forEach((id) => {
+        const el = els.current[id]
+        if (el) {
+          el.classList.add('placed')
+          el.style.zIndex = 2
+        }
+      })
+    }
+    const recount = () => {
+      let n = 0
+      anchored.current.forEach((gid) => {
+        const m = groupMembers.current.get(gid)
+        if (m) n += m.length
+      })
+      setPlaced(n)
+      if (n === layout.pz.pieces.length && n > 0) onSolved?.()
+    }
+
+    const finalize = (gid) => {
+      const members = groupMembers.current.get(gid)
+      // nearest cross-group connection
+      let best = null
+      members.forEach((id) => {
+        neighbors(id).forEach((n) => {
+          if (groupOf.current.get(n) === gid) return
+          const hx = byId[id].home.x - byId[n].home.x
+          const hy = byId[id].home.y - byId[n].home.y
+          const dx = pos.current[n].x + hx - pos.current[id].x
+          const dy = pos.current[n].y + hy - pos.current[id].y
+          const dist = Math.hypot(dx, dy)
+          if (dist < SNAP && (!best || dist < best.dist)) best = { dx, dy, dist }
+        })
+      })
+      // nearest slot in the frame (so you can also just drop pieces into place)
+      let frame = null
+      members.forEach((id) => {
+        const dx = layout.originX + byId[id].home.x - pos.current[id].x
+        const dy = layout.originY + byId[id].home.y - pos.current[id].y
+        const dist = Math.hypot(dx, dy)
+        if (dist < SNAP && (!frame || dist < frame.dist)) frame = { dx, dy, dist }
+      })
+      if (frame && (!best || frame.dist <= best.dist)) shift(gid, frame.dx, frame.dy)
+      else if (best) shift(gid, best.dx, best.dy)
+      mergeExact()
+      // anchor+lock any group that is now sitting in its true frame position
+      for (const gg of [...groupMembers.current.keys()]) {
+        const id = groupMembers.current.get(gg)[0]
+        const dx = layout.originX + byId[id].home.x - pos.current[id].x
+        const dy = layout.originY + byId[id].home.y - pos.current[id].y
+        if (Math.hypot(dx, dy) < 2) {
+          anchored.current.add(gg)
+          lock(gg)
+        }
+      }
+      recount()
+    }
+
     const onMove = (e) => {
       const d = drag.current
       if (!d) return
-      place(d.el, e.clientX - d.dx, e.clientY - d.dy)
+      const dx = e.clientX - d.sx
+      const dy = e.clientY - d.sy
+      groupMembers.current.get(d.gid).forEach((id) => {
+        const el = els.current[id]
+        el.style.left = `${d.start[id].x + dx}px`
+        el.style.top = `${d.start[id].y + dy}px`
+      })
     }
-    const onUp = () => {
+    const onUp = (e) => {
       const d = drag.current
-      if (!d || !layout) return
+      if (!d) return
       drag.current = null
-      const el = d.el
-      const x = parseFloat(el.style.left)
-      const y = parseFloat(el.style.top)
-      const p = layout.pz.pieces.find((pp) => pp.id === d.id)
-      const homeX = layout.originX + p.home.x
-      const homeY = layout.originY + p.home.y
-      if (Math.hypot(x - homeX, y - homeY) < SNAP) {
-        place(el, homeX, homeY)
-        el.classList.add('placed')
-        el.style.zIndex = 2
-        if (!posRef.current[d.id].placed) {
-          posRef.current[d.id].placed = true
-          setPlaced((n) => {
-            const total = n + 1
-            if (total === layout.pz.pieces.length) onSolved?.()
-            return total
-          })
-        }
-      } else {
-        posRef.current[d.id] = { x, y, placed: false }
-      }
+      const dx = e.clientX - d.sx
+      const dy = e.clientY - d.sy
+      groupMembers.current.get(d.gid).forEach((id) => {
+        pos.current[id] = { x: d.start[id].x + dx, y: d.start[id].y + dy }
+      })
+      finalize(d.gid)
     }
     window.addEventListener('pointermove', onMove)
     window.addEventListener('pointerup', onUp)
@@ -201,17 +307,17 @@ export default function Puzzle({ cols = 6, rows = 8, seed = 42, image = shipUrl,
   }, [layout, onSolved])
 
   const onDown = (e, p) => {
-    if (posRef.current[p.id]?.placed) return
-    const el = els.current[p.id]
-    const x = parseFloat(el.style.left)
-    const y = parseFloat(el.style.top)
-    drag.current = { id: p.id, el, dx: e.clientX - x, dy: e.clientY - y }
-    zTop.current += 1
-    el.style.zIndex = zTop.current
-    el.setPointerCapture?.(e.pointerId)
+    const gid = groupOf.current.get(p.id)
+    if (gid === undefined || anchored.current.has(gid)) return
+    const start = {}
+    groupMembers.current.get(gid).forEach((id) => {
+      start[id] = { x: pos.current[id].x, y: pos.current[id].y }
+      zTop.current += 1
+      els.current[id].style.zIndex = zTop.current
+    })
+    drag.current = { gid, sx: e.clientX, sy: e.clientY, start }
+    els.current[p.id].setPointerCapture?.(e.pointerId)
   }
-
-  const total = layout ? layout.pz.pieces.length : 0
 
   return (
     <div className="pz-wrap">
@@ -222,12 +328,7 @@ export default function Puzzle({ cols = 6, rows = 8, seed = 42, image = shipUrl,
         {layout && (
           <div
             className="pz-target"
-            style={{
-              left: layout.originX,
-              top: layout.originY,
-              width: layout.aW,
-              height: layout.aH,
-            }}
+            style={{ left: layout.originX, top: layout.originY, width: layout.aW, height: layout.aH }}
           />
         )}
         {layout &&
@@ -243,9 +344,7 @@ export default function Puzzle({ cols = 6, rows = 8, seed = 42, image = shipUrl,
               onDown={onDown}
             />
           ))}
-        {ready && placed === total && total > 0 && (
-          <div className="pz-solved">solved ✶</div>
-        )}
+        {placed === total && total > 0 && <div className="pz-solved">solved ✶</div>}
       </div>
     </div>
   )
