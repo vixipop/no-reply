@@ -5,6 +5,7 @@ import Archive from './pages/Archive'
 import Entry from './pages/Entry'
 import Mirror from './pages/Mirror'
 import Settings from './pages/Settings'
+import PuzzlePage from './pages/PuzzlePage'
 import { useToast } from './components/Toast'
 import MusicPlayer from './components/MusicPlayer'
 import Fab from './components/Fab'
@@ -35,6 +36,7 @@ export default function App() {
         <Route path="/entry/:id" element={<Entry />} />
         <Route path="/mirror" element={<Mirror />} />
         <Route path="/settings" element={<Settings />} />
+        <Route path="/puzzle" element={<PuzzlePage />} />
       </Routes>
       <Fab />
     </>
