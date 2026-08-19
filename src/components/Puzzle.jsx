@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { generatePuzzle } from '../lib/puzzle'
+import { playSnap } from '../lib/snapSound'
 import shipUrl from '../assets/puzzle/ship.png'
 
 // tiny seeded rng for the scatter, so a given puzzle always lays out the same way
@@ -20,6 +21,13 @@ function PuzzleDefs() {
   return (
     <svg className="pz-defs" width="0" height="0" aria-hidden="true">
       <defs>
+        {/* the exposed foam/board core along the piece's cut edge — sage to match
+            the app, lit at the top and shaded toward the bottom */}
+        <linearGradient id="pz-core" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#68977395" />
+          <stop offset="0.45" stopColor="#4f7a5c" />
+          <stop offset="1" stopColor="#31503b" />
+        </linearGradient>
         {/* fine matte paper grain, printed over the artwork */}
         <filter id="pz-grain">
           <feTurbulence
@@ -61,17 +69,22 @@ function PuzzleDefs() {
   )
 }
 
+const CORE = 6 // px of exposed thickness along the bottom/right edge
+
 function Piece({ p, image, aW, aH, register, onDown }) {
   const { w, h } = p.bbox
   const cid = `pzc-${p.id}`
   return (
     <div className="pz-piece" ref={(el) => register(p.id, el)} onPointerDown={(e) => onDown(e, p)}>
-      <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} className="pz-svg">
+      <svg width={w} height={h + CORE} viewBox={`0 0 ${w} ${h + CORE}`} className="pz-svg">
         <defs>
           <clipPath id={cid}>
             <path d={p.d} />
           </clipPath>
         </defs>
+        {/* the chunky core, offset down/right so its thickness shows at the edge */}
+        <path d={p.d} transform={`translate(1.5 ${CORE})`} fill="url(#pz-core)" />
+        {/* printed top face */}
         <g filter="url(#pz-emboss)">
           <g clipPath={`url(#${cid})`}>
             <image
@@ -92,12 +105,11 @@ function Piece({ p, image, aW, aH, register, onDown }) {
               opacity="0.12"
               style={{ mixBlendMode: 'multiply' }}
             />
-            {/* thin dark die-cut line, hugging the inside of the edge */}
-            <path d={p.d} fill="none" stroke="#241a0c" strokeWidth="1.3" strokeOpacity="0.4" />
           </g>
         </g>
-        {/* faint light catch right on the cut edge */}
-        <path d={p.d} fill="none" stroke="#f4ecd4" strokeWidth="0.7" strokeOpacity="0.35" />
+        {/* the pale paper layer at the very cut edge, sitting above the green core */}
+        <path d={p.d} fill="none" stroke="#efe7d1" strokeWidth="1.5" strokeOpacity="0.75" />
+        <path d={p.d} fill="none" stroke="#241a0c" strokeWidth="0.7" strokeOpacity="0.28" />
       </svg>
     </div>
   )
@@ -272,6 +284,11 @@ export default function Puzzle({ cols = 6, rows = 8, seed = 42, image = shipUrl,
 
     const finalize = (gid) => {
       const members = groupMembers.current.get(gid)
+      const groupsBefore = groupMembers.current.size
+      let anchoredBefore = 0
+      anchored.current.forEach((g) => {
+        anchoredBefore += groupMembers.current.get(g)?.length || 0
+      })
       // nearest cross-group connection
       let best = null
       members.forEach((id) => {
@@ -305,6 +322,14 @@ export default function Puzzle({ cols = 6, rows = 8, seed = 42, image = shipUrl,
           anchored.current.add(gg)
           lock(gg)
         }
+      }
+      // a real connection happened if groups merged or new pieces locked in
+      let anchoredAfter = 0
+      anchored.current.forEach((g) => {
+        anchoredAfter += groupMembers.current.get(g)?.length || 0
+      })
+      if (groupMembers.current.size < groupsBefore || anchoredAfter > anchoredBefore) {
+        playSnap()
       }
       recount()
     }
