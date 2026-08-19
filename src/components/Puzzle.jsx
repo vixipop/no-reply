@@ -15,10 +15,55 @@ function rng(seed) {
 
 const SNAP = 26 // px of slack before pieces click together / into the frame
 
-function Piece({ p, image, aW, aH, index, register, onDown }) {
+// shared filters/textures for every piece — defined once, referenced by all
+function PuzzleDefs() {
+  return (
+    <svg className="pz-defs" width="0" height="0" aria-hidden="true">
+      <defs>
+        {/* fine matte paper grain, printed over the artwork */}
+        <filter id="pz-grain">
+          <feTurbulence
+            type="fractalNoise"
+            baseFrequency="0.9"
+            numOctaves="2"
+            seed="5"
+            stitchTiles="stitch"
+            result="n"
+          />
+          <feColorMatrix
+            in="n"
+            type="matrix"
+            values="0 0 0 0 0.35  0 0 0 0 0.31  0 0 0 0 0.24  0 0 0 0.8 0"
+          />
+        </filter>
+        {/* cardboard emboss: a faint, matte raised edge catching a soft warm light
+            from the top-left — just enough to read as a physical die-cut tile */}
+        <filter id="pz-emboss" x="-25%" y="-25%" width="150%" height="150%">
+          <feGaussianBlur in="SourceAlpha" stdDeviation="1.6" result="blur" />
+          <feSpecularLighting
+            in="blur"
+            surfaceScale="1.3"
+            specularConstant="0.3"
+            specularExponent="5"
+            lightingColor="#fff4e2"
+            result="spec"
+          >
+            <feDistantLight azimuth="228" elevation="60" />
+          </feSpecularLighting>
+          <feComposite in="spec" in2="SourceAlpha" operator="in" result="specC" />
+          <feMerge>
+            <feMergeNode in="SourceGraphic" />
+            <feMergeNode in="specC" />
+          </feMerge>
+        </filter>
+      </defs>
+    </svg>
+  )
+}
+
+function Piece({ p, image, aW, aH, register, onDown }) {
   const { w, h } = p.bbox
   const cid = `pzc-${p.id}`
-  const fid = `pzf-${p.id}`
   return (
     <div className="pz-piece" ref={(el) => register(p.id, el)} onPointerDown={(e) => onDown(e, p)}>
       <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} className="pz-svg">
@@ -26,45 +71,33 @@ function Piece({ p, image, aW, aH, index, register, onDown }) {
           <clipPath id={cid}>
             <path d={p.d} />
           </clipPath>
-          {/* fibrous cardboard grain, unique per piece so it never tiles visibly */}
-          <filter id={fid}>
-            <feTurbulence
-              type="fractalNoise"
-              baseFrequency="0.7"
-              numOctaves="2"
-              seed={index * 7 + 1}
-              stitchTiles="stitch"
-              result="n"
-            />
-            <feColorMatrix
-              in="n"
-              type="matrix"
-              values="0 0 0 0 0.42  0 0 0 0 0.37  0 0 0 0 0.27  0 0 0 0.9 0"
-            />
-          </filter>
         </defs>
-        <g clipPath={`url(#${cid})`}>
-          <image
-            href={image}
-            x={-p.bbox.x}
-            y={-p.bbox.y}
-            width={aW}
-            height={aH}
-            preserveAspectRatio="none"
-          />
-          <rect
-            x="0"
-            y="0"
-            width={w}
-            height={h}
-            filter={`url(#${fid})`}
-            opacity="0.15"
-            style={{ mixBlendMode: 'multiply' }}
-          />
+        <g filter="url(#pz-emboss)">
+          <g clipPath={`url(#${cid})`}>
+            <image
+              href={image}
+              x={-p.bbox.x}
+              y={-p.bbox.y}
+              width={aW}
+              height={aH}
+              preserveAspectRatio="none"
+            />
+            {/* matte print grain */}
+            <rect
+              x="0"
+              y="0"
+              width={w}
+              height={h}
+              filter="url(#pz-grain)"
+              opacity="0.12"
+              style={{ mixBlendMode: 'multiply' }}
+            />
+            {/* thin dark die-cut line, hugging the inside of the edge */}
+            <path d={p.d} fill="none" stroke="#241a0c" strokeWidth="1.3" strokeOpacity="0.4" />
+          </g>
         </g>
-        {/* die-cut edge: a warm cardboard-core rim + a thin dark line for depth */}
-        <path d={p.d} fill="none" stroke="#e7dab6" strokeWidth="1.5" strokeOpacity="0.5" />
-        <path d={p.d} fill="none" stroke="#2c2413" strokeWidth="0.8" strokeOpacity="0.32" />
+        {/* faint light catch right on the cut edge */}
+        <path d={p.d} fill="none" stroke="#f4ecd4" strokeWidth="0.7" strokeOpacity="0.35" />
       </svg>
     </div>
   )
@@ -325,6 +358,7 @@ export default function Puzzle({ cols = 6, rows = 8, seed = 42, image = shipUrl,
         {placed} / {total} pieces
       </div>
       <div className="pz-board" ref={boardRef}>
+        <PuzzleDefs />
         {layout && (
           <div
             className="pz-target"
@@ -332,11 +366,10 @@ export default function Puzzle({ cols = 6, rows = 8, seed = 42, image = shipUrl,
           />
         )}
         {layout &&
-          layout.pz.pieces.map((p, i) => (
+          layout.pz.pieces.map((p) => (
             <Piece
               key={p.id}
               p={p}
-              index={i}
               image={image}
               aW={layout.aW}
               aH={layout.aH}

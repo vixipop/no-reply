@@ -1996,13 +1996,21 @@
   z-index: 0;
 }
 
+.pz-defs {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+}
+
 .pz-piece {
   position: absolute;
   left: 0;
   top: 0;
   cursor: grab;
   touch-action: none;
-  filter: drop-shadow(2px 3px 3px rgba(0, 0, 0, 0.45));
+  /* close, soft contact shadow — a piece lying on a surface, not floating */
+  filter: drop-shadow(1px 2px 2px rgba(0, 0, 0, 0.4));
   transition: filter 0.15s ease;
   will-change: left, top;
 }
@@ -2011,8 +2019,8 @@
 }
 .pz-piece.placed {
   cursor: default;
-  /* settle flat onto the mat once it's home */
-  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.28));
+  /* settle flat once it's home */
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.3));
 }
 
 .pz-svg {
