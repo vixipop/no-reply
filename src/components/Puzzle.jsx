@@ -16,23 +16,49 @@ function rng(seed) {
 
 const SNAP = 26 // px of slack before pieces click together / into the frame
 
-// shared filters/textures for every piece — defined once, referenced by all
+const CORE = 9 // px of exposed foam thickness along the bottom/right edge
+
+// shared textures for every piece — defined once, referenced by all
 function PuzzleDefs() {
   return (
     <svg className="pz-defs" width="0" height="0" aria-hidden="true">
       <defs>
-        {/* the exposed foam/board core along the piece's cut edge — sage to match
-            the app, lit at the top and shaded toward the bottom */}
-        <linearGradient id="pz-core" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stopColor="#68977395" />
-          <stop offset="0.45" stopColor="#4f7a5c" />
-          <stop offset="1" stopColor="#31503b" />
+        {/* matte porous floral-foam, for the side of each piece */}
+        <filter id="pz-foam-tex" x="0" y="0" width="100%" height="100%">
+          <feTurbulence
+            type="fractalNoise"
+            baseFrequency="0.34 0.4"
+            numOctaves="4"
+            seed="9"
+            stitchTiles="stitch"
+            result="n"
+          />
+          {/* speckle: dark-green pores from the noise's red channel */}
+          <feColorMatrix
+            in="n"
+            type="matrix"
+            values="0 0 0 0 0.17  0 0 0 0 0.31  0 0 0 0 0.22  0.7 0 0 0 -0.12"
+          />
+        </filter>
+        <pattern id="pz-foam" width="52" height="52" patternUnits="userSpaceOnUse">
+          <rect width="52" height="52" fill="#4a7a5b" />
+          <rect width="52" height="52" filter="url(#pz-foam-tex)" />
+        </pattern>
+        {/* darken the bottom of the foam band so it reads as a rounded side */}
+        <linearGradient id="pz-core-shade" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#0e2016" stopOpacity="0" />
+          <stop offset="0.55" stopColor="#0e2016" stopOpacity="0.12" />
+          <stop offset="1" stopColor="#0a1810" stopOpacity="0.5" />
         </linearGradient>
-        {/* fine matte paper grain, printed over the artwork */}
+        {/* enrich the printed artwork so it doesn't look washed out */}
+        <filter id="pz-print" x="0" y="0" width="100%" height="100%">
+          <feColorMatrix type="saturate" values="1.2" />
+        </filter>
+        {/* very fine matte paper grain over the print */}
         <filter id="pz-grain">
           <feTurbulence
             type="fractalNoise"
-            baseFrequency="0.9"
+            baseFrequency="1.1"
             numOctaves="2"
             seed="5"
             stitchTiles="stitch"
@@ -41,35 +67,13 @@ function PuzzleDefs() {
           <feColorMatrix
             in="n"
             type="matrix"
-            values="0 0 0 0 0.35  0 0 0 0 0.31  0 0 0 0 0.24  0 0 0 0.8 0"
+            values="0 0 0 0 0.4  0 0 0 0 0.36  0 0 0 0 0.28  0 0 0 0.5 0"
           />
-        </filter>
-        {/* cardboard emboss: a faint, matte raised edge catching a soft warm light
-            from the top-left — just enough to read as a physical die-cut tile */}
-        <filter id="pz-emboss" x="-25%" y="-25%" width="150%" height="150%">
-          <feGaussianBlur in="SourceAlpha" stdDeviation="1.6" result="blur" />
-          <feSpecularLighting
-            in="blur"
-            surfaceScale="1.3"
-            specularConstant="0.3"
-            specularExponent="5"
-            lightingColor="#fff4e2"
-            result="spec"
-          >
-            <feDistantLight azimuth="228" elevation="60" />
-          </feSpecularLighting>
-          <feComposite in="spec" in2="SourceAlpha" operator="in" result="specC" />
-          <feMerge>
-            <feMergeNode in="SourceGraphic" />
-            <feMergeNode in="specC" />
-          </feMerge>
         </filter>
       </defs>
     </svg>
   )
 }
-
-const CORE = 6 // px of exposed thickness along the bottom/right edge
 
 function Piece({ p, image, aW, aH, register, onDown }) {
   const { w, h } = p.bbox
@@ -82,34 +86,34 @@ function Piece({ p, image, aW, aH, register, onDown }) {
             <path d={p.d} />
           </clipPath>
         </defs>
-        {/* the chunky core, offset down/right so its thickness shows at the edge */}
-        <path d={p.d} transform={`translate(1.5 ${CORE})`} fill="url(#pz-core)" />
-        {/* printed top face */}
-        <g filter="url(#pz-emboss)">
-          <g clipPath={`url(#${cid})`}>
-            <image
-              href={image}
-              x={-p.bbox.x}
-              y={-p.bbox.y}
-              width={aW}
-              height={aH}
-              preserveAspectRatio="none"
-            />
-            {/* matte print grain */}
-            <rect
-              x="0"
-              y="0"
-              width={w}
-              height={h}
-              filter="url(#pz-grain)"
-              opacity="0.12"
-              style={{ mixBlendMode: 'multiply' }}
-            />
-          </g>
+        {/* the chunky foam side, offset down so its thickness shows at the edge */}
+        <g transform={`translate(0 ${CORE})`}>
+          <path d={p.d} fill="url(#pz-foam)" />
+          <path d={p.d} fill="url(#pz-core-shade)" />
         </g>
-        {/* the pale paper layer at the very cut edge, sitting above the green core */}
-        <path d={p.d} fill="none" stroke="#efe7d1" strokeWidth="1.5" strokeOpacity="0.75" />
-        <path d={p.d} fill="none" stroke="#241a0c" strokeWidth="0.7" strokeOpacity="0.28" />
+        {/* printed top face — smooth, no emboss */}
+        <g clipPath={`url(#${cid})`}>
+          <image
+            href={image}
+            x={-p.bbox.x}
+            y={-p.bbox.y}
+            width={aW}
+            height={aH}
+            preserveAspectRatio="none"
+            filter="url(#pz-print)"
+          />
+          <rect
+            x="0"
+            y="0"
+            width={w}
+            height={h}
+            filter="url(#pz-grain)"
+            opacity="0.08"
+            style={{ mixBlendMode: 'multiply' }}
+          />
+        </g>
+        {/* thin pale paper layer right at the cut edge (print sits above the foam) */}
+        <path d={p.d} fill="none" stroke="#f1ead6" strokeWidth="1.3" strokeOpacity="0.85" />
       </svg>
     </div>
   )
@@ -149,7 +153,7 @@ export default function Puzzle({ cols = 6, rows = 8, seed = 42, image = shipUrl,
     if (!board || !img) return null
     let aH = Math.min(board.h * 0.74, 540)
     let aW = aH * (img.w / img.h)
-    const maxW = board.w * 0.6
+    const maxW = board.w * 0.5 // leave generous side margins to pile loose pieces
     if (aW > maxW) {
       aW = maxW
       aH = aW * (img.h / img.w)
@@ -174,21 +178,29 @@ export default function Puzzle({ cols = 6, rows = 8, seed = 42, image = shipUrl,
     }
   }
 
-  // scatter pieces once we have a layout; every piece starts in its own group
+  // scatter pieces once we have a layout; every piece starts in its own group.
+  // Pieces pile in the left/right margins so the assembly rectangle stays clear.
   useEffect(() => {
     if (!layout) return
-    const { pz } = layout
+    const { pz, originX, originY, aW, aH } = layout
     const r = rng(seed * 7 + 3)
     pos.current = {}
     groupOf.current = new Map()
     groupMembers.current = new Map()
     anchored.current = new Set()
     gidSeq.current = 0
-    pz.pieces.forEach((p) => {
-      pos.current[p.id] = {
-        x: 6 + r() * Math.max(1, board.w - p.bbox.w - 12),
-        y: 6 + r() * Math.max(1, board.h - p.bbox.h - 12),
-      }
+    const bw = pz.pieces[0].bbox.w
+    const bh = pz.pieces[0].bbox.h
+    // left band: [gap, originX - bw]; right band: [originX + aW, board.w - bw]
+    const leftHi = Math.max(4, originX - bw - 4)
+    const rightLo = Math.min(board.w - bw - 4, originX + aW + 4)
+    const rightHi = Math.max(rightLo, board.w - bw - 4)
+    const yHi = Math.max(4, board.h - bh - 4)
+    pz.pieces.forEach((p, i) => {
+      const left = i % 2 === 0
+      const x = left ? 4 + r() * Math.max(1, leftHi - 4) : rightLo + r() * Math.max(1, rightHi - rightLo)
+      const y = 4 + r() * yHi
+      pos.current[p.id] = { x, y }
       const gid = gidSeq.current++
       groupOf.current.set(p.id, gid)
       groupMembers.current.set(gid, [p.id])
@@ -334,11 +346,17 @@ export default function Puzzle({ cols = 6, rows = 8, seed = 42, image = shipUrl,
       recount()
     }
 
+    // keep the dragged group fully inside the board so pieces can't be lost
+    const clamp = (d, dx, dy) => {
+      const b = d.bounds
+      const cx = Math.min(Math.max(dx, -b.minX), Math.max(-b.minX, d.bw - b.maxRight))
+      const cy = Math.min(Math.max(dy, -b.minY), Math.max(-b.minY, d.bh - b.maxBottom))
+      return [cx, cy]
+    }
     const onMove = (e) => {
       const d = drag.current
       if (!d) return
-      const dx = e.clientX - d.sx
-      const dy = e.clientY - d.sy
+      const [dx, dy] = clamp(d, e.clientX - d.sx, e.clientY - d.sy)
       groupMembers.current.get(d.gid).forEach((id) => {
         const el = els.current[id]
         el.style.left = `${d.start[id].x + dx}px`
@@ -349,8 +367,7 @@ export default function Puzzle({ cols = 6, rows = 8, seed = 42, image = shipUrl,
       const d = drag.current
       if (!d) return
       drag.current = null
-      const dx = e.clientX - d.sx
-      const dy = e.clientY - d.sy
+      const [dx, dy] = clamp(d, e.clientX - d.sx, e.clientY - d.sy)
       groupMembers.current.get(d.gid).forEach((id) => {
         pos.current[id] = { x: d.start[id].x + dx, y: d.start[id].y + dy }
       })
@@ -367,13 +384,33 @@ export default function Puzzle({ cols = 6, rows = 8, seed = 42, image = shipUrl,
   const onDown = (e, p) => {
     const gid = groupOf.current.get(p.id)
     if (gid === undefined || anchored.current.has(gid)) return
+    const bw = p.bbox.w
+    const bh = p.bbox.h + CORE
+    let minX = Infinity
+    let minY = Infinity
+    let maxRight = -Infinity
+    let maxBottom = -Infinity
     const start = {}
     groupMembers.current.get(gid).forEach((id) => {
-      start[id] = { x: pos.current[id].x, y: pos.current[id].y }
+      const q = pos.current[id]
+      start[id] = { x: q.x, y: q.y }
+      minX = Math.min(minX, q.x)
+      minY = Math.min(minY, q.y)
+      maxRight = Math.max(maxRight, q.x + bw)
+      maxBottom = Math.max(maxBottom, q.y + bh)
       zTop.current += 1
       els.current[id].style.zIndex = zTop.current
     })
-    drag.current = { gid, sx: e.clientX, sy: e.clientY, start }
+    const el = boardRef.current
+    drag.current = {
+      gid,
+      sx: e.clientX,
+      sy: e.clientY,
+      start,
+      bounds: { minX, minY, maxRight, maxBottom },
+      bw: el.clientWidth,
+      bh: el.clientHeight,
+    }
     els.current[p.id].setPointerCapture?.(e.pointerId)
   }
 
