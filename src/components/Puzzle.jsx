@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { generatePuzzle } from '../lib/puzzle'
 import { playSnap } from '../lib/snapSound'
 import shipUrl from '../assets/puzzle/ship.png'
+import foamUrl from '../assets/puzzle/foam.png'
 
 // tiny seeded rng for the scatter, so a given puzzle always lays out the same way
 function rng(seed) {
@@ -23,52 +24,40 @@ function PuzzleDefs() {
   return (
     <svg className="pz-defs" width="0" height="0" aria-hidden="true">
       <defs>
-        {/* matte porous floral-foam, for the side of each piece */}
-        <filter id="pz-foam-tex" x="0" y="0" width="100%" height="100%">
-          <feTurbulence
-            type="fractalNoise"
-            baseFrequency="0.34 0.4"
-            numOctaves="4"
-            seed="9"
-            stitchTiles="stitch"
-            result="n"
-          />
-          {/* speckle: dark-green pores from the noise's red channel */}
-          <feColorMatrix
-            in="n"
-            type="matrix"
-            values="0 0 0 0 0.17  0 0 0 0 0.31  0 0 0 0 0.22  0.7 0 0 0 -0.12"
-          />
-        </filter>
-        <pattern id="pz-foam" width="52" height="52" patternUnits="userSpaceOnUse">
-          <rect width="52" height="52" fill="#4a7a5b" />
-          <rect width="52" height="52" filter="url(#pz-foam-tex)" />
+        {/* real open-cell sponge photo, tiled, for the side of each piece */}
+        <pattern id="pz-foam" width="82" height="82" patternUnits="userSpaceOnUse">
+          <image href={foamUrl} x="0" y="0" width="82" height="82" preserveAspectRatio="xMidYMid slice" />
         </pattern>
         {/* darken the bottom of the foam band so it reads as a rounded side */}
         <linearGradient id="pz-core-shade" x1="0" y1="0" x2="0" y2="1">
           <stop offset="0" stopColor="#0e2016" stopOpacity="0" />
-          <stop offset="0.55" stopColor="#0e2016" stopOpacity="0.12" />
-          <stop offset="1" stopColor="#0a1810" stopOpacity="0.5" />
+          <stop offset="0.5" stopColor="#0e2016" stopOpacity="0.14" />
+          <stop offset="1" stopColor="#081408" stopOpacity="0.55" />
         </linearGradient>
         {/* enrich the printed artwork so it doesn't look washed out */}
         <filter id="pz-print" x="0" y="0" width="100%" height="100%">
           <feColorMatrix type="saturate" values="1.2" />
         </filter>
-        {/* very fine matte paper grain over the print */}
-        <filter id="pz-grain">
-          <feTurbulence
-            type="fractalNoise"
-            baseFrequency="1.1"
-            numOctaves="2"
-            seed="5"
-            stitchTiles="stitch"
-            result="n"
-          />
-          <feColorMatrix
-            in="n"
-            type="matrix"
-            values="0 0 0 0 0.4  0 0 0 0 0.36  0 0 0 0 0.28  0 0 0 0.5 0"
-          />
+        {/* soft rounded lip: an inner shadow so the top rolls into the side with no
+            hard outline; light reads from the top-left */}
+        <filter id="pz-round" x="-25%" y="-25%" width="150%" height="150%">
+          <feComponentTransfer in="SourceAlpha">
+            <feFuncA type="table" tableValues="1 0" />
+          </feComponentTransfer>
+          <feGaussianBlur stdDeviation="2" />
+          <feOffset dx="0.6" dy="1.3" result="sh" />
+          <feComposite in="sh" in2="SourceAlpha" operator="in" />
+          <feColorMatrix type="matrix" values="0 0 0 0 0.05  0 0 0 0 0.09  0 0 0 0 0.06  0 0 0 0.85 0" />
+        </filter>
+        {/* faint top-left highlight for the domed 3D feel */}
+        <filter id="pz-round-hi" x="-25%" y="-25%" width="150%" height="150%">
+          <feComponentTransfer in="SourceAlpha">
+            <feFuncA type="table" tableValues="1 0" />
+          </feComponentTransfer>
+          <feGaussianBlur stdDeviation="1.7" />
+          <feOffset dx="-0.7" dy="-1.1" result="hi" />
+          <feComposite in="hi" in2="SourceAlpha" operator="in" />
+          <feColorMatrix type="matrix" values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 0.96  0 0 0 0.32 0" />
         </filter>
       </defs>
     </svg>
@@ -91,7 +80,7 @@ function Piece({ p, image, aW, aH, register, onDown }) {
           <path d={p.d} fill="url(#pz-foam)" />
           <path d={p.d} fill="url(#pz-core-shade)" />
         </g>
-        {/* printed top face — smooth, no emboss */}
+        {/* printed top face — smooth */}
         <g clipPath={`url(#${cid})`}>
           <image
             href={image}
@@ -102,18 +91,11 @@ function Piece({ p, image, aW, aH, register, onDown }) {
             preserveAspectRatio="none"
             filter="url(#pz-print)"
           />
-          <rect
-            x="0"
-            y="0"
-            width={w}
-            height={h}
-            filter="url(#pz-grain)"
-            opacity="0.08"
-            style={{ mixBlendMode: 'multiply' }}
-          />
         </g>
-        {/* thin pale paper layer right at the cut edge (print sits above the foam) */}
-        <path d={p.d} fill="none" stroke="#f1ead6" strokeWidth="1.3" strokeOpacity="0.85" />
+        {/* rounded edge shading (no hard outline): a soft dark lip rolling into the
+            side, plus a faint top-left highlight for the domed 3D look */}
+        <path d={p.d} fill="#000" filter="url(#pz-round)" />
+        <path d={p.d} fill="#000" filter="url(#pz-round-hi)" />
       </svg>
     </div>
   )
