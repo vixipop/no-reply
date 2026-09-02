@@ -22,12 +22,11 @@ function mulberry32(seed) {
 // Neck pinches in around the middle, the head balloons out past it → the classic
 // interlocking bulge.
 const KNOB = [
-  [0.28, 0.0, 0.39, 0.0, 0.41, 0.04],
-  [0.45, 0.11, 0.35, 0.18, 0.41, 0.22],
-  [0.33, 0.27, 0.41, 0.33, 0.5, 0.33],
-  [0.59, 0.33, 0.67, 0.27, 0.59, 0.22],
-  [0.65, 0.18, 0.55, 0.11, 0.59, 0.04],
-  [0.61, 0.0, 0.72, 0.0, 1.0, 0.0],
+  [0.13, 0.0, 0.25, 0.0, 0.38, 0.0], // straight run to the neck (left)
+  [0.34, 0.1, 0.34, 0.22, 0.42, 0.26], // up into the head (undercut, left side)
+  [0.46, 0.29, 0.54, 0.29, 0.58, 0.26], // over the round top
+  [0.66, 0.22, 0.66, 0.1, 0.62, 0.0], // down out of the head (mirror, right side)
+  [0.75, 0.0, 0.87, 0.0, 1.0, 0.0], // straight run to the end (right)
 ]
 
 export function generatePuzzle({ width, height, cols, rows, seed = 1 }) {
