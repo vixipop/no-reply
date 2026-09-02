@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { generatePuzzle } from '../lib/puzzle'
 import { playSnap } from '../lib/snapSound'
-import shipUrl from '../assets/puzzle/ship.png'
+import shipUrl from '../assets/puzzle/ship-web.jpg'
 
 // tiny seeded rng for the scatter, so a given puzzle always lays out the same way
 function rng(seed) {
