@@ -25,12 +25,12 @@ function PuzzleDefs() {
         <filter id="pz-print" x="0" y="0" width="100%" height="100%">
           <feColorMatrix type="saturate" values="1.15" />
         </filter>
-        {/* fine cardboard/paper grain over the print */}
+        {/* fibrous cardboard/paper grain over the print */}
         <filter id="pz-grain">
           <feTurbulence
             type="fractalNoise"
-            baseFrequency="0.9"
-            numOctaves="2"
+            baseFrequency="0.42 0.85"
+            numOctaves="3"
             seed="5"
             stitchTiles="stitch"
             result="n"
@@ -38,29 +38,29 @@ function PuzzleDefs() {
           <feColorMatrix
             in="n"
             type="matrix"
-            values="0 0 0 0 0.36  0 0 0 0 0.32  0 0 0 0 0.24  0 0 0 0.6 0"
+            values="0 0 0 0 0.3  0 0 0 0 0.26  0 0 0 0 0.18  0 0 0 0.75 0"
           />
         </filter>
-        {/* gentle bevel: a soft shadow inside the bottom-right edge so pieces read
-            as slightly rounded — smooth, no hard outline */}
-        <filter id="pz-bevel-dark" x="-25%" y="-25%" width="150%" height="150%">
+        {/* bevelled cardboard edge — a shaded lip inside the bottom-right so the
+            piece reads as raised and rounded; smooth, no hard outline */}
+        <filter id="pz-bevel-dark" x="-30%" y="-30%" width="160%" height="160%">
           <feComponentTransfer in="SourceAlpha">
             <feFuncA type="table" tableValues="1 0" />
           </feComponentTransfer>
-          <feGaussianBlur stdDeviation="2.4" />
-          <feOffset dx="1" dy="1.6" result="sh" />
+          <feGaussianBlur stdDeviation="3.2" />
+          <feOffset dx="1.6" dy="2.2" result="sh" />
           <feComposite in="sh" in2="SourceAlpha" operator="in" />
-          <feColorMatrix type="matrix" values="0 0 0 0 0.08  0 0 0 0 0.1  0 0 0 0 0.07  0 0 0 0.55 0" />
+          <feColorMatrix type="matrix" values="0 0 0 0 0.05  0 0 0 0 0.07  0 0 0 0 0.04  0 0 0 0.8 0" />
         </filter>
-        {/* matching soft highlight inside the top-left edge */}
-        <filter id="pz-bevel-light" x="-25%" y="-25%" width="150%" height="150%">
+        {/* matching lit lip inside the top-left edge */}
+        <filter id="pz-bevel-light" x="-30%" y="-30%" width="160%" height="160%">
           <feComponentTransfer in="SourceAlpha">
             <feFuncA type="table" tableValues="1 0" />
           </feComponentTransfer>
-          <feGaussianBlur stdDeviation="2.2" />
-          <feOffset dx="-1" dy="-1.4" result="hi" />
+          <feGaussianBlur stdDeviation="2.8" />
+          <feOffset dx="-1.6" dy="-2" result="hi" />
           <feComposite in="hi" in2="SourceAlpha" operator="in" />
-          <feColorMatrix type="matrix" values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 0.95  0 0 0 0.4 0" />
+          <feColorMatrix type="matrix" values="0 0 0 0 1  0 0 0 0 0.99  0 0 0 0 0.93  0 0 0 0.6 0" />
         </filter>
       </defs>
     </svg>
@@ -95,12 +95,14 @@ function Piece({ p, image, aW, aH, register, onDown }) {
             width={w}
             height={h}
             filter="url(#pz-grain)"
-            opacity="0.1"
+            opacity="0.22"
             style={{ mixBlendMode: 'multiply' }}
           />
-          {/* soft bevel, clipped so it stays inside the piece */}
+          {/* bevelled lip for depth */}
           <path d={p.d} fill="#000" filter="url(#pz-bevel-dark)" />
           <path d={p.d} fill="#000" filter="url(#pz-bevel-light)" />
+          {/* thin die-cut groove right at the cut edge (clipped → inner half only) */}
+          <path d={p.d} fill="none" stroke="#241a10" strokeWidth="2" strokeOpacity="0.4" />
         </g>
       </svg>
     </div>
