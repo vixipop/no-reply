@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { generatePuzzle } from '../lib/puzzle'
 import { playSnap } from '../lib/snapSound'
 import shipUrl from '../assets/puzzle/ship-web.jpg'
+import paperUrl from '../assets/puzzle/paper.png'
 
 // tiny seeded rng for the scatter, so a given puzzle always lays out the same way
 function rng(seed) {
@@ -24,22 +25,6 @@ function PuzzleDefs() {
         {/* enrich the printed artwork so it doesn't look washed out */}
         <filter id="pz-print" x="0" y="0" width="100%" height="100%">
           <feColorMatrix type="saturate" values="1.15" />
-        </filter>
-        {/* fibrous cardboard/paper grain over the print */}
-        <filter id="pz-grain">
-          <feTurbulence
-            type="fractalNoise"
-            baseFrequency="0.42 0.85"
-            numOctaves="3"
-            seed="5"
-            stitchTiles="stitch"
-            result="n"
-          />
-          <feColorMatrix
-            in="n"
-            type="matrix"
-            values="0 0 0 0 0.3  0 0 0 0 0.26  0 0 0 0 0.18  0 0 0 0.75 0"
-          />
         </filter>
         {/* bevelled cardboard edge — a shaded lip inside the bottom-right so the
             piece reads as raised and rounded; smooth, no hard outline */}
@@ -88,15 +73,16 @@ function Piece({ p, image, aW, aH, register, onDown }) {
             preserveAspectRatio="none"
             filter="url(#pz-print)"
           />
-          {/* cardboard grain on the top face */}
-          <rect
+          {/* stained-paper / cardboard texture, soft-light over the print */}
+          <image
+            href={paperUrl}
             x="0"
             y="0"
             width={w}
             height={h}
-            filter="url(#pz-grain)"
-            opacity="0.22"
-            style={{ mixBlendMode: 'multiply' }}
+            preserveAspectRatio="xMidYMid slice"
+            opacity="0.9"
+            style={{ mixBlendMode: 'soft-light' }}
           />
           {/* bevelled lip for depth */}
           <path d={p.d} fill="#000" filter="url(#pz-bevel-dark)" />
@@ -109,7 +95,7 @@ function Piece({ p, image, aW, aH, register, onDown }) {
   )
 }
 
-export default function Puzzle({ cols = 6, rows = 8, seed = 42, image = shipUrl, onSolved }) {
+export default function Puzzle({ cols = 6, rows = 8, seed = 42, image = shipUrl, shadow = 'dramatic', onSolved }) {
   const boardRef = useRef(null)
   const els = useRef({})
   const drag = useRef(null)
@@ -409,7 +395,7 @@ export default function Puzzle({ cols = 6, rows = 8, seed = 42, image = shipUrl,
       <div className="pz-progress">
         {placed} / {total} pieces
       </div>
-      <div className="pz-board" ref={boardRef}>
+      <div className={`pz-board shadow-${shadow}`} ref={boardRef}>
         <PuzzleDefs />
         {layout && (
           <div
