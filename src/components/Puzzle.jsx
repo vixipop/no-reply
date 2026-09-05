@@ -69,7 +69,7 @@ function Piece({ p, image, aW, aH, register, onDown }) {
   const { w, h } = p.bbox
   const mid = `pzm-${p.id}`
   return (
-    <div className="pz-piece" ref={(el) => register(p.id, el)} onPointerDown={(e) => onDown(e, p)}>
+    <div className="pz-piece" ref={(el) => register(p.id, el)}>
       <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} className="pz-svg">
         <defs>
           {/* rounded silhouette used as the mask — rounds every corner */}
@@ -101,9 +101,16 @@ function Piece({ p, image, aW, aH, register, onDown }) {
           {/* bevelled lip for depth */}
           <path d={p.d} fill="#000" filter="url(#pz-bevel-dark)" />
           <path d={p.d} fill="#000" filter="url(#pz-bevel-light)" />
-          {/* thin die-cut groove right at the cut edge (clipped → inner half only) */}
-          <path d={p.d} fill="none" stroke="#241a10" strokeWidth="2" strokeOpacity="0.4" />
         </g>
+        {/* invisible hit area = the piece silhouette only, so transparent corners
+            of the bounding box don't steal clicks from pieces underneath */}
+        <path
+          d={p.d}
+          fill="#000"
+          fillOpacity="0"
+          className="pz-hit"
+          onPointerDown={(e) => onDown(e, p)}
+        />
       </svg>
     </div>
   )
@@ -401,7 +408,8 @@ export default function Puzzle({ cols = 6, rows = 8, seed = 42, image = shipUrl,
       bw: el.clientWidth,
       bh: el.clientHeight,
     }
-    els.current[p.id].setPointerCapture?.(e.pointerId)
+    // capture on the hit path so the drag keeps tracking even off-piece
+    e.currentTarget.setPointerCapture?.(e.pointerId)
   }
 
   return (
@@ -412,21 +420,10 @@ export default function Puzzle({ cols = 6, rows = 8, seed = 42, image = shipUrl,
       <div className={`pz-board shadow-${shadow}`} ref={boardRef}>
         <PuzzleDefs />
         {layout && (
-          <>
-            {/* faint image behind the frame so seams between rounded pieces read as
-                the picture, not empty gaps (also a subtle placement guide) */}
-            <img
-              className="pz-ghost"
-              src={image}
-              alt=""
-              draggable={false}
-              style={{ left: layout.originX, top: layout.originY, width: layout.aW, height: layout.aH }}
-            />
-            <div
-              className="pz-target"
-              style={{ left: layout.originX, top: layout.originY, width: layout.aW, height: layout.aH }}
-            />
-          </>
+          <div
+            className="pz-target"
+            style={{ left: layout.originX, top: layout.originY, width: layout.aW, height: layout.aH }}
+          />
         )}
         {layout &&
           layout.pz.pieces.map((p) => (

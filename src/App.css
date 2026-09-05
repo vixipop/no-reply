@@ -2007,10 +2007,19 @@
   position: absolute;
   left: 0;
   top: 0;
-  cursor: grab;
-  touch-action: none;
+  /* the box itself isn't clickable — only the piece silhouette (.pz-hit) is,
+     so transparent corners don't steal clicks from pieces underneath */
+  pointer-events: none;
   transition: filter 0.15s ease;
   will-change: left, top;
+}
+.pz-hit {
+  pointer-events: fill;
+  cursor: grab;
+  touch-action: none;
+}
+.pz-hit:active {
+  cursor: grabbing;
 }
 /* soft shadow (Frame 143 look) */
 .pz-board.shadow-soft .pz-piece {
@@ -2020,10 +2029,7 @@
 .pz-board.shadow-dramatic .pz-piece {
   filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.35)) drop-shadow(4px 6px 7px rgba(0, 0, 0, 0.55));
 }
-.pz-piece:active {
-  cursor: grabbing;
-}
-.pz-piece.placed {
+.pz-piece.placed .pz-hit {
   cursor: default;
 }
 /* placed pieces keep the chosen shadow style (just a touch tighter) so toggling
