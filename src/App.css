@@ -2021,24 +2021,16 @@
 .pz-hit:active {
   cursor: grabbing;
 }
-/* soft shadow (Frame 143 look) */
-.pz-board.shadow-soft .pz-piece {
-  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.3)) drop-shadow(1px 2px 3px rgba(0, 0, 0, 0.38));
-}
-/* dramatic grainy shadow (Frame 139 look) — a deeper, offset cast */
-.pz-board.shadow-dramatic .pz-piece {
-  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.35)) drop-shadow(4px 6px 7px rgba(0, 0, 0, 0.55));
-}
 .pz-piece.placed .pz-hit {
   cursor: default;
 }
-/* placed pieces keep the chosen shadow style (just a touch tighter) so toggling
-   changes the whole assembled picture too */
-.pz-board.shadow-soft .pz-piece.placed {
-  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.28));
+/* the drop shadow is the in-SVG grainy .pz-shad path; the toggle just sets how
+   strong it reads */
+.pz-board.shadow-soft .pz-shad {
+  opacity: 0.7;
 }
-.pz-board.shadow-dramatic .pz-piece.placed {
-  filter: drop-shadow(2px 3px 5px rgba(0, 0, 0, 0.5));
+.pz-board.shadow-dramatic .pz-shad {
+  opacity: 1;
 }
 
 .pz-svg {
