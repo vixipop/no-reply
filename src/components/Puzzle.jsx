@@ -35,23 +35,19 @@ function PuzzleDefs() {
             values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 26 -9.5"
           />
         </filter>
-        {/* warm, soft, slightly grainy drop shadow — matches puzzle.png */}
-        <filter id="pz-shadow" x="-50%" y="-50%" width="200%" height="200%">
+        {/* warm, soft drop shadow — solid flood clipped to the blurred shape, in
+            sRGB so the colour is exactly this (no filter colour artifacts) */}
+        <filter
+          id="pz-shadow"
+          x="-50%"
+          y="-50%"
+          width="200%"
+          height="200%"
+          colorInterpolationFilters="sRGB"
+        >
           <feGaussianBlur in="SourceAlpha" stdDeviation="3.4" result="blur" />
-          <feTurbulence type="fractalNoise" baseFrequency="0.5" numOctaves="2" seed="11" result="n" />
-          <feColorMatrix
-            in="n"
-            type="matrix"
-            values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.9 -0.1"
-            result="grain"
-          />
-          {/* base shadow everywhere + extra where the grain is dense → grainy */}
-          <feComposite in="blur" in2="grain" operator="arithmetic" k1="0.85" k2="0.3" k3="0" k4="0" result="gs" />
-          <feColorMatrix
-            in="gs"
-            type="matrix"
-            values="0 0 0 0 0.27  0 0 0 0 0.2  0 0 0 0 0.14  0 0 0 0.8 0"
-          />
+          <feFlood floodColor="#3a2c1f" floodOpacity="0.55" />
+          <feComposite in2="blur" operator="in" />
         </filter>
       </defs>
     </svg>
@@ -70,9 +66,11 @@ function Piece({ p, image, aW, aH, register, onDown }) {
             <path d={p.d} fill="#fff" filter="url(#pz-round)" />
           </mask>
         </defs>
-        {/* grainy warm drop shadow (offset down-right), behind the piece */}
+        {/* warm soft drop shadow (offset down-right), behind the piece */}
         <path d={p.d} transform="translate(2 3)" filter="url(#pz-shadow)" className="pz-shad" />
-        <g mask={`url(#${mid})`}>
+        {/* isolate so the soft-light texture blends only with the painting, not the
+            green board behind (which was leaking a green halo at the edges) */}
+        <g mask={`url(#${mid})`} style={{ isolation: 'isolate' }}>
           {/* the painting, unedited */}
           <image
             href={image}
