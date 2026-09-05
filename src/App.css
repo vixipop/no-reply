@@ -2023,10 +2023,16 @@
 .pz-piece:active {
   cursor: grabbing;
 }
-.pz-board .pz-piece.placed {
+.pz-piece.placed {
   cursor: default;
-  /* settle flat once it's home */
-  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.3));
+}
+/* placed pieces keep the chosen shadow style (just a touch tighter) so toggling
+   changes the whole assembled picture too */
+.pz-board.shadow-soft .pz-piece.placed {
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.28));
+}
+.pz-board.shadow-dramatic .pz-piece.placed {
+  filter: drop-shadow(2px 3px 5px rgba(0, 0, 0, 0.5));
 }
 
 .pz-svg {
@@ -2086,4 +2092,15 @@
 .pz-shadow-toggle button.active {
   background: rgba(247, 244, 213, 0.14);
   color: #f7f4d5;
+}
+
+/* faint reference image behind the frame — hides seams between rounded pieces */
+.pz-ghost {
+  position: absolute;
+  z-index: 0;
+  opacity: 0.3;
+  object-fit: fill;
+  border-radius: 3px;
+  pointer-events: none;
+  user-select: none;
 }

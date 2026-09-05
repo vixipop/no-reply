@@ -26,6 +26,19 @@ function PuzzleDefs() {
         <filter id="pz-print" x="0" y="0" width="100%" height="100%">
           <feColorMatrix type="saturate" values="1.15" />
         </filter>
+        {/* round EVERY corner of the piece (like Figma corner-radius): blur the
+            silhouette then re-sharpen its alpha, so convex + concave corners all
+            round by the same amount */}
+        <filter id="pz-round" x="-20%" y="-20%" width="140%" height="140%">
+          <feGaussianBlur in="SourceGraphic" stdDeviation="3" result="b" />
+          {/* threshold below 0.5 grows the silhouette a hair, so rounded neighbours
+              overlap and close the seam gap while corners stay rounded */}
+          <feColorMatrix
+            in="b"
+            type="matrix"
+            values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 26 -9.5"
+          />
+        </filter>
         {/* bevelled cardboard edge — a shaded lip inside the bottom-right so the
             piece reads as raised and rounded; smooth, no hard outline */}
         <filter id="pz-bevel-dark" x="-30%" y="-30%" width="160%" height="160%">
@@ -54,16 +67,17 @@ function PuzzleDefs() {
 
 function Piece({ p, image, aW, aH, register, onDown }) {
   const { w, h } = p.bbox
-  const cid = `pzc-${p.id}`
+  const mid = `pzm-${p.id}`
   return (
     <div className="pz-piece" ref={(el) => register(p.id, el)} onPointerDown={(e) => onDown(e, p)}>
       <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} className="pz-svg">
         <defs>
-          <clipPath id={cid}>
-            <path d={p.d} />
-          </clipPath>
+          {/* rounded silhouette used as the mask — rounds every corner */}
+          <mask id={mid}>
+            <path d={p.d} fill="#fff" filter="url(#pz-round)" />
+          </mask>
         </defs>
-        <g clipPath={`url(#${cid})`}>
+        <g mask={`url(#${mid})`}>
           <image
             href={image}
             x={-p.bbox.x}
@@ -398,10 +412,21 @@ export default function Puzzle({ cols = 6, rows = 8, seed = 42, image = shipUrl,
       <div className={`pz-board shadow-${shadow}`} ref={boardRef}>
         <PuzzleDefs />
         {layout && (
-          <div
-            className="pz-target"
-            style={{ left: layout.originX, top: layout.originY, width: layout.aW, height: layout.aH }}
-          />
+          <>
+            {/* faint image behind the frame so seams between rounded pieces read as
+                the picture, not empty gaps (also a subtle placement guide) */}
+            <img
+              className="pz-ghost"
+              src={image}
+              alt=""
+              draggable={false}
+              style={{ left: layout.originX, top: layout.originY, width: layout.aW, height: layout.aH }}
+            />
+            <div
+              className="pz-target"
+              style={{ left: layout.originX, top: layout.originY, width: layout.aW, height: layout.aH }}
+            />
+          </>
         )}
         {layout &&
           layout.pz.pieces.map((p) => (
