@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { generatePuzzle } from '../lib/puzzle'
 import { playSnap } from '../lib/snapSound'
 import shipUrl from '../assets/puzzle/ship-web.jpg'
-import paperUrl from '../assets/puzzle/paper.png'
+import paperUrl from '../assets/puzzle/vecteezy_design-space-stained-paper-textured-background_.jpg'
 
 // tiny seeded rng for the scatter, so a given puzzle always lays out the same way
 function rng(seed) {
