@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { generatePuzzle } from '../lib/puzzle'
 import { playSnap } from '../lib/snapSound'
-import shipUrl from '../assets/puzzle/ship.png'
-import foamUrl from '../assets/puzzle/foam.png'
+import shipUrl from '../assets/puzzle/ship-web.jpg'
+import paperUrl from '../assets/puzzle/paper.png'
 
 // tiny seeded rng for the scatter, so a given puzzle always lays out the same way
 function rng(seed) {
@@ -17,47 +17,35 @@ function rng(seed) {
 
 const SNAP = 26 // px of slack before pieces click together / into the frame
 
-const CORE = 9 // px of exposed foam thickness along the bottom/right edge
-
 // shared textures for every piece — defined once, referenced by all
 function PuzzleDefs() {
   return (
     <svg className="pz-defs" width="0" height="0" aria-hidden="true">
       <defs>
-        {/* real open-cell sponge photo, tiled, for the side of each piece */}
-        <pattern id="pz-foam" width="82" height="82" patternUnits="userSpaceOnUse">
-          <image href={foamUrl} x="0" y="0" width="82" height="82" preserveAspectRatio="xMidYMid slice" />
-        </pattern>
-        {/* darken the bottom of the foam band so it reads as a rounded side */}
-        <linearGradient id="pz-core-shade" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stopColor="#0e2016" stopOpacity="0" />
-          <stop offset="0.5" stopColor="#0e2016" stopOpacity="0.14" />
-          <stop offset="1" stopColor="#081408" stopOpacity="0.55" />
-        </linearGradient>
         {/* enrich the printed artwork so it doesn't look washed out */}
         <filter id="pz-print" x="0" y="0" width="100%" height="100%">
-          <feColorMatrix type="saturate" values="1.2" />
+          <feColorMatrix type="saturate" values="1.15" />
         </filter>
-        {/* soft rounded lip: an inner shadow so the top rolls into the side with no
-            hard outline; light reads from the top-left */}
-        <filter id="pz-round" x="-25%" y="-25%" width="150%" height="150%">
+        {/* bevelled cardboard edge — a shaded lip inside the bottom-right so the
+            piece reads as raised and rounded; smooth, no hard outline */}
+        <filter id="pz-bevel-dark" x="-30%" y="-30%" width="160%" height="160%">
           <feComponentTransfer in="SourceAlpha">
             <feFuncA type="table" tableValues="1 0" />
           </feComponentTransfer>
-          <feGaussianBlur stdDeviation="2" />
-          <feOffset dx="0.6" dy="1.3" result="sh" />
+          <feGaussianBlur stdDeviation="3.2" />
+          <feOffset dx="1.6" dy="2.2" result="sh" />
           <feComposite in="sh" in2="SourceAlpha" operator="in" />
-          <feColorMatrix type="matrix" values="0 0 0 0 0.05  0 0 0 0 0.09  0 0 0 0 0.06  0 0 0 0.85 0" />
+          <feColorMatrix type="matrix" values="0 0 0 0 0.05  0 0 0 0 0.07  0 0 0 0 0.04  0 0 0 0.8 0" />
         </filter>
-        {/* faint top-left highlight for the domed 3D feel */}
-        <filter id="pz-round-hi" x="-25%" y="-25%" width="150%" height="150%">
+        {/* matching lit lip inside the top-left edge */}
+        <filter id="pz-bevel-light" x="-30%" y="-30%" width="160%" height="160%">
           <feComponentTransfer in="SourceAlpha">
             <feFuncA type="table" tableValues="1 0" />
           </feComponentTransfer>
-          <feGaussianBlur stdDeviation="1.7" />
-          <feOffset dx="-0.7" dy="-1.1" result="hi" />
+          <feGaussianBlur stdDeviation="2.8" />
+          <feOffset dx="-1.6" dy="-2" result="hi" />
           <feComposite in="hi" in2="SourceAlpha" operator="in" />
-          <feColorMatrix type="matrix" values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 0.96  0 0 0 0.32 0" />
+          <feColorMatrix type="matrix" values="0 0 0 0 1  0 0 0 0 0.99  0 0 0 0 0.93  0 0 0 0.6 0" />
         </filter>
       </defs>
     </svg>
@@ -69,18 +57,12 @@ function Piece({ p, image, aW, aH, register, onDown }) {
   const cid = `pzc-${p.id}`
   return (
     <div className="pz-piece" ref={(el) => register(p.id, el)} onPointerDown={(e) => onDown(e, p)}>
-      <svg width={w} height={h + CORE} viewBox={`0 0 ${w} ${h + CORE}`} className="pz-svg">
+      <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} className="pz-svg">
         <defs>
           <clipPath id={cid}>
             <path d={p.d} />
           </clipPath>
         </defs>
-        {/* the chunky foam side, offset down so its thickness shows at the edge */}
-        <g transform={`translate(0 ${CORE})`}>
-          <path d={p.d} fill="url(#pz-foam)" />
-          <path d={p.d} fill="url(#pz-core-shade)" />
-        </g>
-        {/* printed top face — smooth */}
         <g clipPath={`url(#${cid})`}>
           <image
             href={image}
@@ -91,17 +73,29 @@ function Piece({ p, image, aW, aH, register, onDown }) {
             preserveAspectRatio="none"
             filter="url(#pz-print)"
           />
+          {/* stained-paper / cardboard texture, soft-light over the print */}
+          <image
+            href={paperUrl}
+            x="0"
+            y="0"
+            width={w}
+            height={h}
+            preserveAspectRatio="xMidYMid slice"
+            opacity="0.9"
+            style={{ mixBlendMode: 'soft-light' }}
+          />
+          {/* bevelled lip for depth */}
+          <path d={p.d} fill="#000" filter="url(#pz-bevel-dark)" />
+          <path d={p.d} fill="#000" filter="url(#pz-bevel-light)" />
+          {/* thin die-cut groove right at the cut edge (clipped → inner half only) */}
+          <path d={p.d} fill="none" stroke="#241a10" strokeWidth="2" strokeOpacity="0.4" />
         </g>
-        {/* rounded edge shading (no hard outline): a soft dark lip rolling into the
-            side, plus a faint top-left highlight for the domed 3D look */}
-        <path d={p.d} fill="#000" filter="url(#pz-round)" />
-        <path d={p.d} fill="#000" filter="url(#pz-round-hi)" />
       </svg>
     </div>
   )
 }
 
-export default function Puzzle({ cols = 6, rows = 8, seed = 42, image = shipUrl, onSolved }) {
+export default function Puzzle({ cols = 6, rows = 8, seed = 42, image = shipUrl, shadow = 'dramatic', onSolved }) {
   const boardRef = useRef(null)
   const els = useRef({})
   const drag = useRef(null)
@@ -367,7 +361,7 @@ export default function Puzzle({ cols = 6, rows = 8, seed = 42, image = shipUrl,
     const gid = groupOf.current.get(p.id)
     if (gid === undefined || anchored.current.has(gid)) return
     const bw = p.bbox.w
-    const bh = p.bbox.h + CORE
+    const bh = p.bbox.h
     let minX = Infinity
     let minY = Infinity
     let maxRight = -Infinity
@@ -401,7 +395,7 @@ export default function Puzzle({ cols = 6, rows = 8, seed = 42, image = shipUrl,
       <div className="pz-progress">
         {placed} / {total} pieces
       </div>
-      <div className="pz-board" ref={boardRef}>
+      <div className={`pz-board shadow-${shadow}`} ref={boardRef}>
         <PuzzleDefs />
         {layout && (
           <div

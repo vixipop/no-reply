@@ -2009,15 +2009,21 @@
   top: 0;
   cursor: grab;
   touch-action: none;
-  /* close, soft contact shadow — a piece lying on a surface, not floating */
-  filter: drop-shadow(1px 2px 2px rgba(0, 0, 0, 0.4));
   transition: filter 0.15s ease;
   will-change: left, top;
+}
+/* soft shadow (Frame 143 look) */
+.pz-board.shadow-soft .pz-piece {
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.3)) drop-shadow(1px 2px 3px rgba(0, 0, 0, 0.38));
+}
+/* dramatic grainy shadow (Frame 139 look) — a deeper, offset cast */
+.pz-board.shadow-dramatic .pz-piece {
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.35)) drop-shadow(4px 6px 7px rgba(0, 0, 0, 0.55));
 }
 .pz-piece:active {
   cursor: grabbing;
 }
-.pz-piece.placed {
+.pz-board .pz-piece.placed {
   cursor: default;
   /* settle flat once it's home */
   filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.3));
@@ -2050,4 +2056,34 @@
     opacity: 1;
     transform: scale(1);
   }
+}
+
+/* puzzle page header + shadow-style toggle */
+.puzzle-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.pz-shadow-toggle {
+  display: inline-flex;
+  border: 1px solid rgba(247, 244, 213, 0.25);
+  border-radius: 999px;
+  overflow: hidden;
+}
+.pz-shadow-toggle button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  color: rgba(247, 244, 213, 0.6);
+  padding: 6px 16px;
+  transition: background 0.15s, color 0.15s;
+}
+.pz-shadow-toggle button.active {
+  background: rgba(247, 244, 213, 0.14);
+  color: #f7f4d5;
 }
