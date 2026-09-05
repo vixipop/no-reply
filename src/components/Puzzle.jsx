@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { generatePuzzle } from '../lib/puzzle'
 import { playSnap } from '../lib/snapSound'
 import shipUrl from '../assets/puzzle/ship-web.jpg'
-import paperUrl from '../assets/puzzle/paper.png'
+import paperUrl from '../assets/puzzle/vecteezy_design-space-stained-paper-textured-background_.jpg'
 
 // tiny seeded rng for the scatter, so a given puzzle always lays out the same way
 function rng(seed) {
@@ -25,6 +25,19 @@ function PuzzleDefs() {
         {/* enrich the printed artwork so it doesn't look washed out */}
         <filter id="pz-print" x="0" y="0" width="100%" height="100%">
           <feColorMatrix type="saturate" values="1.15" />
+        </filter>
+        {/* round EVERY corner of the piece (like Figma corner-radius): blur the
+            silhouette then re-sharpen its alpha, so convex + concave corners all
+            round by the same amount */}
+        <filter id="pz-round" x="-20%" y="-20%" width="140%" height="140%">
+          <feGaussianBlur in="SourceGraphic" stdDeviation="3" result="b" />
+          {/* threshold below 0.5 grows the silhouette a hair, so rounded neighbours
+              overlap and close the seam gap while corners stay rounded */}
+          <feColorMatrix
+            in="b"
+            type="matrix"
+            values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 26 -9.5"
+          />
         </filter>
         {/* bevelled cardboard edge — a shaded lip inside the bottom-right so the
             piece reads as raised and rounded; smooth, no hard outline */}
@@ -54,16 +67,17 @@ function PuzzleDefs() {
 
 function Piece({ p, image, aW, aH, register, onDown }) {
   const { w, h } = p.bbox
-  const cid = `pzc-${p.id}`
+  const mid = `pzm-${p.id}`
   return (
-    <div className="pz-piece" ref={(el) => register(p.id, el)} onPointerDown={(e) => onDown(e, p)}>
+    <div className="pz-piece" ref={(el) => register(p.id, el)}>
       <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} className="pz-svg">
         <defs>
-          <clipPath id={cid}>
-            <path d={p.d} />
-          </clipPath>
+          {/* rounded silhouette used as the mask — rounds every corner */}
+          <mask id={mid}>
+            <path d={p.d} fill="#fff" filter="url(#pz-round)" />
+          </mask>
         </defs>
-        <g clipPath={`url(#${cid})`}>
+        <g mask={`url(#${mid})`}>
           <image
             href={image}
             x={-p.bbox.x}
@@ -87,9 +101,16 @@ function Piece({ p, image, aW, aH, register, onDown }) {
           {/* bevelled lip for depth */}
           <path d={p.d} fill="#000" filter="url(#pz-bevel-dark)" />
           <path d={p.d} fill="#000" filter="url(#pz-bevel-light)" />
-          {/* thin die-cut groove right at the cut edge (clipped → inner half only) */}
-          <path d={p.d} fill="none" stroke="#241a10" strokeWidth="2" strokeOpacity="0.4" />
         </g>
+        {/* invisible hit area = the piece silhouette only, so transparent corners
+            of the bounding box don't steal clicks from pieces underneath */}
+        <path
+          d={p.d}
+          fill="#000"
+          fillOpacity="0"
+          className="pz-hit"
+          onPointerDown={(e) => onDown(e, p)}
+        />
       </svg>
     </div>
   )
@@ -387,7 +408,8 @@ export default function Puzzle({ cols = 6, rows = 8, seed = 42, image = shipUrl,
       bw: el.clientWidth,
       bh: el.clientHeight,
     }
-    els.current[p.id].setPointerCapture?.(e.pointerId)
+    // capture on the hit path so the drag keeps tracking even off-piece
+    e.currentTarget.setPointerCapture?.(e.pointerId)
   }
 
   return (
