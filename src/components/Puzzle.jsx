@@ -22,10 +22,6 @@ function PuzzleDefs() {
   return (
     <svg className="pz-defs" width="0" height="0" aria-hidden="true">
       <defs>
-        {/* enrich the printed artwork so it doesn't look washed out */}
-        <filter id="pz-print" x="0" y="0" width="100%" height="100%">
-          <feColorMatrix type="saturate" values="1.15" />
-        </filter>
         {/* round EVERY corner of the piece (like Figma corner-radius): blur the
             silhouette then re-sharpen its alpha, so convex + concave corners all
             round by the same amount */}
@@ -38,27 +34,6 @@ function PuzzleDefs() {
             type="matrix"
             values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 26 -9.5"
           />
-        </filter>
-        {/* bevelled cardboard edge — a shaded lip inside the bottom-right so the
-            piece reads as raised and rounded; smooth, no hard outline */}
-        <filter id="pz-bevel-dark" x="-30%" y="-30%" width="160%" height="160%">
-          <feComponentTransfer in="SourceAlpha">
-            <feFuncA type="table" tableValues="1 0" />
-          </feComponentTransfer>
-          <feGaussianBlur stdDeviation="3.2" />
-          <feOffset dx="1.6" dy="2.2" result="sh" />
-          <feComposite in="sh" in2="SourceAlpha" operator="in" />
-          <feColorMatrix type="matrix" values="0 0 0 0 0.05  0 0 0 0 0.07  0 0 0 0 0.04  0 0 0 0.8 0" />
-        </filter>
-        {/* matching lit lip inside the top-left edge */}
-        <filter id="pz-bevel-light" x="-30%" y="-30%" width="160%" height="160%">
-          <feComponentTransfer in="SourceAlpha">
-            <feFuncA type="table" tableValues="1 0" />
-          </feComponentTransfer>
-          <feGaussianBlur stdDeviation="2.8" />
-          <feOffset dx="-1.6" dy="-2" result="hi" />
-          <feComposite in="hi" in2="SourceAlpha" operator="in" />
-          <feColorMatrix type="matrix" values="0 0 0 0 1  0 0 0 0 0.99  0 0 0 0 0.93  0 0 0 0.6 0" />
         </filter>
       </defs>
     </svg>
@@ -78,6 +53,7 @@ function Piece({ p, image, aW, aH, register, onDown }) {
           </mask>
         </defs>
         <g mask={`url(#${mid})`}>
+          {/* the painting, unedited */}
           <image
             href={image}
             x={-p.bbox.x}
@@ -85,7 +61,6 @@ function Piece({ p, image, aW, aH, register, onDown }) {
             width={aW}
             height={aH}
             preserveAspectRatio="none"
-            filter="url(#pz-print)"
           />
           {/* stained-paper / cardboard texture, soft-light over the print */}
           <image
@@ -98,9 +73,6 @@ function Piece({ p, image, aW, aH, register, onDown }) {
             opacity="0.9"
             style={{ mixBlendMode: 'soft-light' }}
           />
-          {/* bevelled lip for depth */}
-          <path d={p.d} fill="#000" filter="url(#pz-bevel-dark)" />
-          <path d={p.d} fill="#000" filter="url(#pz-bevel-light)" />
         </g>
         {/* invisible hit area = the piece silhouette only, so transparent corners
             of the bounding box don't steal clicks from pieces underneath */}
