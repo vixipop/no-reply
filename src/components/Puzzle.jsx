@@ -22,6 +22,11 @@ function PuzzleDefs() {
   return (
     <svg className="pz-defs" width="0" height="0" aria-hidden="true">
       <defs>
+        {/* strip the paper texture's warm colour so it adds only grain/tooth,
+            not a tan tint over the painting */}
+        <filter id="pz-paper" colorInterpolationFilters="sRGB">
+          <feColorMatrix type="saturate" values="0" />
+        </filter>
         {/* round EVERY corner of the piece (like Figma corner-radius): blur the
             silhouette then re-sharpen its alpha, so convex + concave corners all
             round by the same amount */}
@@ -88,7 +93,8 @@ function Piece({ p, image, aW, aH, register, onDown }) {
             width={w}
             height={h}
             preserveAspectRatio="xMidYMid slice"
-            opacity="0.9"
+            opacity="0.65"
+            filter="url(#pz-paper)"
             style={{ mixBlendMode: 'soft-light' }}
           />
         </g>
